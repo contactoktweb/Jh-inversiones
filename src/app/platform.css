@@ -91,65 +91,109 @@
 .claim-reject{background:transparent;border-color:#ff8a7a77!important;color:#ff8a7a}
 .claim-done{color:#a9b6e0;font-size:11px;font-weight:700}
 
-/* Paneles con los colores de la web: azul marino y dorado */
-.dash-layout,.auth-layout{--mint:#ffd34f;--violet:#7fb2ff}
-.dash-layout{background:#04092b}
-.dash-sidebar{background:#070e46;border-right-color:#ffffff14}
-.dash-group-label{color:#7d8bc4}
-.dash-nav a{color:#a9b6e0}
-.dash-nav a.current{background:#ffd34f1c;color:#ffd34f}
-.sidebar-help{background:linear-gradient(135deg,#1748c4,#0c2f96);border-color:#ffffff1f}
-.sidebar-help p{color:#d5e1ff}
-.sidebar-foot{color:#a9b6e0}
-.sidebar-foot button,.dash-mobile-signout{color:#d5e1ff}
-.dash-top>span{color:#e1e8ff}
-.dash-live{color:#a9b6e0}
-.dash-live i{box-shadow:0 0 0 4px #ffd34f22}
-.dash-avatar{background:linear-gradient(135deg,#ffe072,#ffb72b);color:#0e173e;border-color:#fff3c4}
-.dash-welcome h1,.dash-layout h2,.rate-modal h2{font-weight:400;letter-spacing:.03em;text-transform:uppercase}
-.dash-welcome p,.dash-date{color:#a9b6e0}
-.demo-notice{background:#2469f61c;border-color:#2469f655;color:#d5e1ff}
-.metric-card,.dash-panel{background:#0a1352;border-color:#ffffff17}
-.metric-card.main-metric{background:radial-gradient(circle at 90% 20%,#ffd34f26,transparent 52%),linear-gradient(135deg,#1748c4,#0c2f96);border-color:#ffffff2b}
-.metric-ambient{border-color:#ffd34f4d;box-shadow:0 0 0 22px #ffd34f10,0 0 0 44px #ffd34f08}
-.metric-label,.metric-foot,.panel-heading>span,.panel-heading>a,.summary-row span,.summary-ring-inner span,.chart-note,.dash-chart-dates,.dash-legal,.cell-sub,.invest-main small,.empty-state{color:#a9b6e0}
-.invest-table th{color:#8fa0d8;border-bottom-color:#ffffff1f}
-.invest-table td{color:#e1e8ff;border-bottom-color:#ffffff12}
-.invest-icon{background:#ffd34f1f}
-.mini-progress,.summary-row i.dim{background:#26337a}
-.summary-ring{background:conic-gradient(var(--mint) var(--angle),#26337a 0)}
-.summary-ring:before{background:#0a1352}
-.dash-chart-grid line{stroke:#ffffff17}
-.dash-chart-line{filter:drop-shadow(0 0 6px #ffd34f55)}
-.badge-status.mature{color:#7fb2ff}.badge-status.mature i{background:#7fb2ff}
-.claim-action{border-color:#ffd34f99;background:#ffd34f14}
-.claim-action:hover:not(:disabled){color:#0e173e}
-.claim-feedback{color:#ffd34f}
-.rate-alert{border-color:#ffd34f66;background:#ffd34f14;color:#fff1c2}
-.rate-alert svg{color:#ffd34f}
-.rate-alert button,.rate-primary{background:linear-gradient(135deg,#ffe072,#ffd34f);color:#0e173e}
-.rate-input{background:#060d3a;border-color:#2b3a8f}
-.rate-form label{color:#e1e8ff}
-.rate-history li{border-bottom-color:#ffffff12}
-.rate-history li>span{color:#e1e8ff}
-.rate-history small,.rate-history .rate-default{color:#a9b6e0}
-.rate-modal-backdrop{background:#020624cc}
-.rate-modal{background:#0a1352;border-color:#ffffff24}
-.rate-modal p{color:#a9b6e0}
-.rate-modal-icon{background:#ffd34f1f;color:#ffd34f}
-.auth-layout{background:#04092b}
-.auth-left{background:radial-gradient(circle at 85% 90%,#2469f666,transparent 45%),linear-gradient(145deg,#0c2f96,#070e46 65%)}
-.auth-left:before{border-color:#ffd34f40;box-shadow:0 0 0 90px #ffd34f0d,0 0 0 180px #ffd34f06}
-.auth-quote h1{font-weight:400;letter-spacing:.02em}
-.auth-quote p,.auth-left-footer,.auth-back,.auth-form>p{color:#a9b6e0}
-.auth-form h2{font-weight:400;letter-spacing:.02em;text-transform:uppercase;font-size:30px}
-.auth-input-shell{background:#0a1352;border-color:#2b3a8f}
-.auth-input-shell svg{color:#8fa0d8}
-.auth-submit{background:linear-gradient(135deg,#ffe072,#ffd34f);color:#0e173e}
-.auth-role-tabs{background:#070e46;border-color:#ffffff1c}
-.auth-role-tabs button{color:#a9b6e0}
-.auth-role-tabs button.active{color:#0e173e}
-.auth-switch{color:#a9b6e0}
+/* Paneles en tema claro: fondo blanco, azul de la marca como acento y dorado en botones */
+.dash-layout,.auth-layout{--mint:#1748c4;--violet:#1748c4;color:#131a35}
+.dash-layout{background:#f5f7fc}
+.dash-layout .brand-mark,.auth-layout .brand-mark{background:linear-gradient(135deg,#ffd34f,#ffb72b);color:#070e46;transform:none}
+.dash-layout .brand-mark i,.auth-layout .brand-mark i{background:#070e46}
+.dash-layout .brand-word,.auth-layout .brand-word{color:#070e46}
+.dash-layout .brand-word span,.auth-layout .brand-word span{color:#65708b}
+.dash-sidebar{background:#fff;border-right-color:#e5e8f0}
+.dash-group-label{color:#8a93ad}
+.dash-nav a{color:#4a5578}
+.dash-nav a.current{background:#eaf0ff;color:#1748c4}
+.dash-nav a:hover{background:#f1f4fb;color:#070e46}
+.sidebar-help{background:#f5f7fc;border-color:#e5e8f0}
+.sidebar-help h3{color:#070e46}
+.sidebar-help p{color:#65708b}
+.sidebar-foot{color:#65708b;border-top-color:#e5e8f0}
+.sidebar-foot button,.dash-mobile-signout{color:#4a5578}
+.dash-mobile-head{background:#fff;border-bottom-color:#e5e8f0}
+.dash-top{border-bottom-color:#e5e8f0}
+.dash-top>span{color:#070e46}
+.dash-live{color:#65708b}
+.dash-live i{background:#18a36b;box-shadow:0 0 0 4px #18a36b22}
+.dash-avatar{background:linear-gradient(135deg,#ffe072,#ffb72b);color:#070e46;border-color:#fff}
+.dash-welcome h1,.dash-layout h2,.rate-modal h2{font-weight:400;letter-spacing:.03em;text-transform:uppercase;color:#070e46}
+.dash-welcome p,.dash-date{color:#65708b}
+.dash-date{border-color:#dfe4ef;background:#fff}
+.demo-notice{background:#eaf0ff;border-color:#c9d7fb;color:#24315f}
+.metric-card,.dash-panel{background:#fff;border-color:#e5e8f0;box-shadow:0 1px 2px #0a14460a,0 8px 24px #0a14460a}
+.metric-card.main-metric{background:radial-gradient(circle at 90% 20%,#ffd34f33,transparent 52%),linear-gradient(135deg,#2469f6,#1748c4);border-color:transparent;color:#fff}
+.main-metric .metric-label,.main-metric .metric-label svg,.main-metric .metric-foot{color:#dfe8ff}
+.metric-ambient{border-color:#ffffff40;box-shadow:0 0 0 22px #ffffff10,0 0 0 44px #ffffff08}
+.metric-value{color:#070e46}.main-metric .metric-value{color:#fff}
+.metric-label,.metric-foot,.panel-heading>span,.panel-heading>a,.summary-row span,.summary-ring-inner span,.chart-note,.dash-chart-dates,.dash-legal,.cell-sub,.invest-main small,.empty-state{color:#65708b}
+.metric-foot.positive,.gain-value{color:#0a8a55}
+.empty-state h3,.summary-row strong,.summary-ring-inner strong{color:#070e46}
+.invest-table th{color:#65708b;border-bottom-color:#e5e8f0}
+.invest-table td{color:#24315f;border-bottom-color:#eef1f7}
+.invest-main span{color:#070e46}
+.invest-icon{background:#eaf0ff}
+.mini-progress,.summary-row i.dim{background:#e3e8f4}
+.summary-ring{background:conic-gradient(var(--mint) var(--angle),#e3e8f4 0)}
+.summary-ring:before{background:#fff}
+.dash-chart-grid line{stroke:#e5e8f0}
+.dash-chart-line{filter:none}
+.badge-status.mature{color:#1748c4}.badge-status.mature i{background:#1748c4}
+.claim-action{border-color:#1748c4;background:#fff;color:#1748c4}
+.claim-action:hover:not(:disabled){background:#1748c4;color:#fff}
+.claim-feedback{color:#1748c4}.claim-feedback.error{color:#c8372d}
+.badge-status.claim-pending{color:#b85600}.badge-status.claim-pending i{background:#e07b16}
+.badge-status.claim-approved{color:#1748c4}.badge-status.claim-approved i{background:#1748c4}
+.badge-status.claim-settled{color:#0a8a55}.badge-status.claim-settled i{background:#18a36b}
+.badge-status.claim-rejected{color:#c8372d}.badge-status.claim-rejected i{background:#c8372d}
+.claim-settle{background:#18a36b;color:#fff}
+.claim-approve{color:#1748c4;border-color:#1748c4!important}
+.claim-reject{color:#c8372d;border-color:#e6a49e!important}
+.claim-done{color:#65708b}
+.withdraw-alert{border-color:#f3b8b1;background:#fff1ef;color:#7a1f16}
+.withdraw-alert svg{color:#c8372d}
+.withdraw-alert a{background:#c8372d;color:#fff}
+.withdraw-list li{border-color:#e5e8f0;background:#f8faff}
+.withdraw-list strong{color:#070e46}
+.withdraw-list small,.withdraw-list p{color:#65708b}
+.rate-alert{border-color:#f5d77a;background:#fff8e1;color:#5c4400}
+.rate-alert svg{color:#d99a00}
+.rate-alert button,.rate-primary,.auth-submit{background:linear-gradient(135deg,#ffe072,#ffd34f);color:#070e46}
+.rate-ghost{border-color:#dfe4ef;color:#4a5578}
+.rate-input{background:#fff;border-color:#cfd6e6}
+.rate-input input{color:#070e46}
+.rate-input span{color:#65708b}
+.rate-form label,.rate-modal label{color:#24315f}
+.rate-presets button{border-color:#dfe4ef;background:#fff;color:#4a5578}
+.rate-presets button.active{border-color:#1748c4;color:#1748c4;background:#eaf0ff}
+.rate-history li{border-bottom-color:#eef1f7}
+.rate-history li>span,.rate-history strong{color:#24315f}
+.rate-history small,.rate-history .rate-default{color:#8a93ad}
+.rate-edit,.rate-inline button{border-color:#dfe4ef;color:#4a5578}
+.rate-modal-backdrop{background:#0a144666}
+.rate-modal{background:#fff;border-color:#e5e8f0;box-shadow:0 30px 80px #0a144633}
+.rate-modal p{color:#65708b}
+.rate-modal-icon{background:#fff3cc;color:#c98a00}
+.auth-layout{background:#fff}
+.auth-left{background:radial-gradient(circle at 85% 90%,#2469f61f,transparent 45%),linear-gradient(145deg,#f8f5ee,#eef3ff 70%)}
+.auth-left:before{border-color:#1748c42e;box-shadow:0 0 0 90px #1748c40a,0 0 0 180px #1748c405}
+.auth-tag{color:#1748c4}
+.auth-quote h1{font-weight:400;letter-spacing:.02em;color:#070e46}
+.auth-quote h1 span{color:#1748c4}
+.auth-quote p,.auth-left-footer,.auth-back,.auth-form>p{color:#65708b}
+.auth-form h2{font-weight:400;letter-spacing:.02em;text-transform:uppercase;font-size:30px;color:#070e46}
+.auth-form label{color:#24315f}
+.auth-input-shell{background:#fff;border-color:#cfd6e6}
+.auth-input-shell svg{color:#8a93ad}
+.auth-input-shell input{color:#070e46}
+.auth-message{color:#1748c4}.auth-message.error{color:#c8372d}
+.auth-role-tabs{background:#f1f4fb;border-color:#e5e8f0}
+.auth-role-tabs button{color:#4a5578}
+.auth-role-tabs button.active{background:#fff;color:#1748c4;box-shadow:0 1px 4px #0a14461f}
+.auth-switch{color:#4a5578}
+.auth-quick{background:#f8faff;border-color:#dfe4ef}
+.auth-quick-head{color:#1748c4}
+.auth-quick>p,.auth-divider{color:#65708b}
+.auth-divider:before,.auth-divider:after{background:#e5e8f0}
+.auth-quick-buttons button.user{box-shadow:0 6px 16px #ffb72b33}
+.auth-quick-buttons button:hover{box-shadow:0 12px 26px #0a144626}
 
 /* Rendimiento del scroll: se pinta solo lo visible y las animaciones van en su propia capa */
 .bm-halo-ring,.bm-orbit-energy,.bm-float-glass{will-change:transform}
