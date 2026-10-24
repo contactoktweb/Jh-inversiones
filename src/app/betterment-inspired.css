@@ -42,7 +42,7 @@
 .bm-scroll-indicator{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--bm-yellow),#ff9f1c);z-index:150;transform-origin:0 50%}
 
 /* Header / Navigation */
-.bm-header{position:absolute;top:0;left:0;right:0;height:84px;z-index:30;border-bottom:1px solid rgba(255,255,255,.14);background:rgba(7,14,70,.25);backdrop-filter:blur(10px)}
+.bm-header{position:absolute;top:0;left:0;right:0;height:84px;z-index:30;border-bottom:1px solid rgba(255,255,255,.14);background:rgba(7,14,70,.55);}
 .bm-nav-container{display:flex;align-items:center;justify-content:space-between;height:100%;gap:34px}
 .bm-header .brand,.bm-footer .brand{color:white;gap:11px;display:inline-flex;align-items:center}
 .bm-header .brand-mark,.bm-footer .brand-mark{background:linear-gradient(135deg,var(--bm-yellow),var(--bm-gold));color:var(--bm-navy);border-radius:12px;transform:none;width:40px;height:40px;display:grid;place-items:center;font:700 17px var(--font-title);letter-spacing:-1px;box-shadow:0 4px 12px rgba(255,211,79,.3)}
@@ -74,8 +74,8 @@
   pointer-events:none;
 }
 .bm-hero-halo{position:absolute;border-radius:50%;pointer-events:none}
-.bm-halo-gold{width:680px;height:680px;background:radial-gradient(circle,rgba(255,211,79,.14) 0%,transparent 65%);filter:blur(50px);left:-150px;top:-130px}
-.bm-halo-sapphire{width:820px;height:820px;background:radial-gradient(circle,rgba(36,105,246,.28) 0%,transparent 65%);filter:blur(60px);right:-160px;top:4%}
+.bm-halo-gold{width:680px;height:680px;background:radial-gradient(circle,rgba(255,211,79,.12) 0%,rgba(255,211,79,.05) 35%,transparent 70%);left:-150px;top:-130px}
+.bm-halo-sapphire{width:820px;height:820px;background:radial-gradient(circle,rgba(36,105,246,.24) 0%,rgba(36,105,246,.1) 35%,transparent 70%);right:-160px;top:4%}
 .bm-halo-ring{width:880px;height:880px;border:1px solid rgba(255,255,255,.06);right:-220px;top:2%;animation:bm-spin-slow 70s linear infinite}
 .bm-orbit-energy{position:absolute;width:580px;height:580px;border:1px dashed rgba(255,255,255,.12);border-radius:50%;pointer-events:none;animation:bm-spin-slow 45s linear infinite reverse}
 
@@ -96,9 +96,8 @@
   display:inline-flex;
   align-items:center;
   gap:11px;
-  background:rgba(255,255,255,.08);
+  background:rgba(20,30,100,.55);
   border:1px solid rgba(255,255,255,.18);
-  backdrop-filter:blur(14px);
   padding:7px 15px 7px 12px;
   border-radius:30px;
   font-family:var(--font-subtitle);
@@ -153,7 +152,6 @@
   background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.12);
   border-radius:12px;
-  backdrop-filter:blur(12px);
   max-width:520px;
   margin-bottom:30px;
 }
@@ -193,7 +191,6 @@
   font-family:var(--font-body);
   font-size:14px;
   font-weight:700;
-  backdrop-filter:blur(12px);
   transition:all .25s ease;
   white-space:nowrap;
 }
@@ -224,8 +221,8 @@
 
 /* Hero Visual Showcase */
 .bm-hero-visual{height:600px;position:relative;display:flex;align-items:center;justify-content:center;perspective:1200px}
-.bm-yellow-orbit{position:absolute;width:520px;height:520px;border-radius:50%;background:linear-gradient(135deg,rgba(255,221,115,.22) 10%,rgba(255,169,47,.16) 45%,rgba(255,206,65,.2) 92%);left:10%;top:0%;filter:blur(25px);transform:rotate(-18deg);animation:bm-breathe 9s ease-in-out infinite}
-.bm-blue-disc{position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(36,107,248,.35),rgba(7,56,188,.2) 70%,transparent 80%);right:-10%;bottom:-5%;filter:blur(30px)}
+.bm-yellow-orbit{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(255,206,65,.2) 0%,rgba(255,169,47,.1) 45%,transparent 70%);left:10%;top:0%}
+.bm-blue-disc{position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(36,107,248,.35),rgba(7,56,188,.14) 50%,transparent 72%);right:-10%;bottom:-5%}
 .bm-preview-wrap{position:relative;z-index:3;width:min(530px,100%);filter:drop-shadow(0 32px 48px rgba(4,8,38,.65))}
 
 /* Dashboard / App Window Preview */
@@ -275,7 +272,6 @@
   align-items:center;
   border-radius:14px;
   background:rgba(255,255,255,.94);
-  backdrop-filter:blur(16px);
   padding:13px 17px;
   box-shadow:0 18px 40px rgba(5,13,54,.22),inset 0 1px 0 #fff;
   border:1px solid rgba(255,255,255,.8);
@@ -294,7 +290,7 @@
 .bm-float-badge{font-family:var(--font-subtitle);font-size:10.5px;font-weight:800;background:#e6fbf2;color:#0b8d69;padding:2px 8px;border-radius:12px;margin-left:4px}
 
 /* Hero Floor Bar */
-.bm-hero-floor{border-top:1px solid rgba(255,255,255,.12);background:rgba(5,11,46,.65);backdrop-filter:blur(10px);position:relative;z-index:2}
+.bm-hero-floor{border-top:1px solid rgba(255,255,255,.12);background:rgba(5,11,46,.85);position:relative;z-index:2}
 .bm-hero-floor .bm-container{display:flex;justify-content:space-between;align-items:center;min-height:58px}
 .bm-floor-kicker{font-family:var(--font-subtitle);font-size:11px;font-weight:700;letter-spacing:.12em;color:#9fb2e2;text-transform:uppercase}
 .bm-floor-link{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-subtitle);font-size:11px;font-weight:700;letter-spacing:.1em;color:#fff;transition:color .2s ease}

@@ -3,12 +3,34 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { BellRing, CalendarDays, Check, FolderOpen, Info, LogOut, Pencil, Percent, Save, Settings2, ShieldCheck, TrendingUp, Users, Wallet, X } from "lucide-react";
+import { Banknote, BellRing, CalendarDays, Check, CircleCheck, Ban, FolderOpen, Info, LogOut, Pencil, Percent, Save, Settings2, ShieldCheck, TrendingUp, Users, Wallet, X } from "lucide-react";
 import Logo from "./logo";
 import { formatDate, formatUsd, type Investment } from "@/lib/finance";
 import { calculateEarnings, DEFAULT_DAILY_RATE_PCT, MAX_DAILY_RATE_PCT, rateFor, recentDayKeys, todayKey, type DailyRates } from "@/lib/rates";
 
 const formatKey = (key: string) => formatDate(`${key}T12:00:00`);
+const CLAIM_LABELS: Record<string,string> = { pending: "PENDIENTE", approved: "APROBADO", settled: "DESEMBOLSADO", rejected: "RECHAZADO" };
+
+function ClaimActions({ investmentId, status, amount, owner }: {investmentId:string;status:string;amount:number;owner:string}) {
+  const router=useRouter();
+  const [busy,setBusy]=useState(false);
+  const [feedback,setFeedback]=useState("");
+  const [error,setError]=useState(false);
+  async function update(next:"approved"|"settled"|"rejected"){
+    const question=next==="settled"?`¿Confirmas que ya desembolsaste ${formatUsd(amount)} a ${owner}?`:next==="rejected"?`¿Rechazar la solicitud de retiro de ${owner}?`:`¿Aprobar el retiro de ${formatUsd(amount)} a ${owner}?`;
+    if(!window.confirm(question))return;
+    setBusy(true);setFeedback("");setError(false);
+    try{
+      const res=await fetch("/api/admin/claims",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({investmentId,status:next})});
+      const data=await res.json();
+      if(!res.ok)throw new Error(data.error||"No se pudo actualizar la solicitud.");
+      setFeedback(data.message);router.refresh();
+    }catch(e){setFeedback(e instanceof Error?e.message:"Error desconocido");setError(true)}
+    finally{setBusy(false)}
+  }
+  if(status==="settled"||status==="rejected")return <span className="claim-done">{status==="settled"?"Pagado":"Cerrada"}</span>;
+  return <div className="claim-buttons">{status==="pending"&&<button type="button" className="claim-approve" disabled={busy} onClick={()=>update("approved")}><Check size={14}/> Aprobar</button>}<button type="button" className="claim-settle" disabled={busy} onClick={()=>update("settled")}><CircleCheck size={14}/> Marcar desembolsado</button><button type="button" className="claim-reject" disabled={busy} onClick={()=>update("rejected")}><Ban size={14}/> Rechazar</button>{feedback&&<p role="status" className={`claim-feedback ${error?"error":""}`}>{feedback}</p>}</div>;
+}
 
 function useSaveRate(onSaved: (date: string, rate: number) => void) {
   const [busy,setBusy]=useState(false);
@@ -62,17 +84,24 @@ export default function AdminView({ demo, adminEmail, investments, rates: initia
   const [editValue,setEditValue]=useState("");
 
   const overview=investments.map(item=>({...item,calc:calculateEarnings(item,rates,now)}));
-  const principal=overview.reduce((s,x)=>s+x.principal_usd,0);
-  const earnings=overview.reduce((s,x)=>s+x.calc.earnings,0);
+  const live=overview.filter(x=>x.status==="active");
+  const principal=live.reduce((s,x)=>s+x.principal_usd,0);
+  const earnings=live.reduce((s,x)=>s+x.calc.earnings,0);
   const investors=new Set(investments.map(x=>x.owner_email)).size;
   const todayRate=rateFor(rates,today);
+  const requests=overview.filter(x=>x.claim_status).sort((a,b)=>(a.claim_status==="pending"||a.claim_status==="approved"?0:1)-(b.claim_status==="pending"||b.claim_status==="approved"?0:1)||Date.parse(b.claim_requested_at||"")-Date.parse(a.claim_requested_at||""));
+  const openRequests=requests.filter(x=>x.claim_status==="pending"||x.claim_status==="approved");
+  const owed=openRequests.reduce((s,x)=>s+(x.claim_amount_usd??x.calc.total),0);
+  // Revisa periódicamente si llegaron nuevas solicitudes de retiro.
+  useEffect(()=>{const interval=setInterval(()=>router.refresh(),30_000);return()=>clearInterval(interval)},[router]);
   const history=recentDayKeys(14,now);
 
-  return <div className="dash-layout"><aside className="dash-sidebar"><Logo/><div className="dash-group-label">ADMINISTRACIÓN</div><nav className="dash-nav" aria-label="Secciones de administración"><a className="current" href="#tasa"><Percent size={18}/><span>Ganancia diaria</span></a><a href="#historial"><CalendarDays size={18}/><span>Historial de tasas</span></a><a href="#inversiones"><Users size={18}/><span>Inversiones</span></a></nav><div className="sidebar-bottom"><div className="sidebar-help"><Settings2 size={23}/><h3>Recuerda a diario.</h3><p>Configura cada día el porcentaje de ganancia. Por defecto se aplica {DEFAULT_DAILY_RATE_PCT}%.</p><Link href="/">Ver sitio público</Link></div><div className="sidebar-foot"><span>{demo?"ADMIN DEMO":"ADMINISTRADOR"}</span><form method="POST" action="/api/signout"><button type="submit" title="Cerrar sesión" aria-label="Cerrar sesión"><LogOut size={18}/></button></form></div></div></aside>
+  return <div className="dash-layout"><aside className="dash-sidebar"><Logo/><div className="dash-group-label">ADMINISTRACIÓN</div><nav className="dash-nav" aria-label="Secciones de administración"><a className="current" href="#tasa"><Percent size={18}/><span>Ganancia diaria</span></a><a href="#historial"><CalendarDays size={18}/><span>Historial de tasas</span></a><a href="#retiros"><Banknote size={18}/><span>Solicitudes de retiro</span>{openRequests.length>0&&<b className="nav-badge">{openRequests.length}</b>}</a><a href="#inversiones"><Users size={18}/><span>Inversiones</span></a></nav><div className="sidebar-bottom"><div className="sidebar-help"><Settings2 size={23}/><h3>Recuerda a diario.</h3><p>Configura cada día el porcentaje de ganancia. Por defecto se aplica {DEFAULT_DAILY_RATE_PCT}%.</p><Link href="/">Ver sitio público</Link></div><div className="sidebar-foot"><span>{demo?"ADMIN DEMO":"ADMINISTRADOR"}</span><form method="POST" action="/api/signout"><button type="submit" title="Cerrar sesión" aria-label="Cerrar sesión"><LogOut size={18}/></button></form></div></div></aside>
   <div><div className="dash-mobile-head"><Logo compact/><form method="POST" action="/api/signout"><button type="submit" className="dash-mobile-signout">Cerrar sesión <LogOut size={16}/></button></form></div><main className="dash-main">
     <header className="dash-top"><span>JH / ADMINISTRACIÓN</span><div className="dash-top-right"><span className="dash-live"><i/>{demo?"ENTORNO DEMO":"PANEL ADMIN"}</span><span className="dash-avatar">A</span></div></header>
     <section className="dash-welcome"><div><span className="dash-eyebrow">PANEL DE ADMINISTRACIÓN</span><h1>Hola, administrador.</h1><p>{adminEmail}</p></div><span className="dash-date"><CalendarDays size={15}/>{formatDate(now)}</span></section>
     {demo&&<div className="demo-notice" role="note"><Info size={18}/>Administración de demostración: las tasas se guardan solo en este navegador y los clientes son ficticios.</div>}
+    {openRequests.length>0&&<div className="withdraw-alert" role="alert"><Banknote size={18}/><span><strong>{openRequests.length} {openRequests.length===1?"solicitud de retiro pendiente":"solicitudes de retiro pendientes"}</strong> de desembolso por {formatUsd(owed)}.</span><a href="#retiros">Revisar y desembolsar</a></div>}
     {!todaySet&&<div className="rate-alert" role="alert"><BellRing size={18}/><span>Aún no configuraste la ganancia de hoy. Se está aplicando el {DEFAULT_DAILY_RATE_PCT}% por defecto.</span><button type="button" onClick={()=>setPromptOpen(true)}>Configurar ahora</button></div>}
     <section className="metrics-grid" aria-label="Resumen de la plataforma"><article className="metric-card main-metric"><div className="metric-ambient"/><div className="metric-label"><Wallet size={16}/> CAPITAL TOTAL</div><div className="metric-value">{formatUsd(principal)}</div><div className="metric-foot"><Users size={14}/> {investors} inversionistas · {investments.length} inversiones</div></article><article className="metric-card"><div className="metric-label"><TrendingUp size={16}/> GANANCIAS GENERADAS</div><div className="metric-value">{formatUsd(earnings)}</div><div className="metric-foot positive">Total adeudado: {formatUsd(principal+earnings)}</div></article><article className="metric-card"><div className="metric-label"><Percent size={16}/> TASA DE HOY</div><div className="metric-value">{todayRate}%</div><div className="metric-foot">{todaySet?<><Check size={14}/> Configurada</>:<><Info size={14}/> Por defecto</>}</div></article></section>
     <div className="dash-body-grid">
@@ -89,7 +118,8 @@ export default function AdminView({ demo, adminEmail, investments, rates: initia
         <ul className="rate-history">{history.map(key=><li key={key}><span>{formatKey(key)}{key===today&&<small> · hoy</small>}</span>{editing===key?<form className="rate-inline" onSubmit={async e=>{e.preventDefault();if(await save(key,Number(editValue)))setEditing(null);}}><RateInput id={`rate-${key}`} value={editValue} onChange={setEditValue}/><button type="submit" aria-label="Guardar" disabled={busy}><Check size={16}/></button><button type="button" aria-label="Cancelar" onClick={()=>setEditing(null)}><X size={16}/></button></form>:<><strong className={key in rates?"":"rate-default"}>{rateFor(rates,key)}%{!(key in rates)&&<small> por defecto</small>}</strong><button type="button" className="rate-edit" aria-label={`Editar tasa del ${formatKey(key)}`} onClick={()=>{setEditing(key);setEditValue(String(rateFor(rates,key)))}}><Pencil size={14}/></button></>}</li>)}</ul>
       </section>
     </div>
-    <section className="dash-panel dash-table-panel" id="inversiones"><div className="panel-heading"><h2>Inversiones de clientes</h2><span><ShieldCheck size={15}/> {investments.length} registros</span></div>{overview.length===0?<div className="empty-state"><FolderOpen size={32}/><h3>Aún no hay inversiones</h3><p>Las inversiones confirmadas aparecerán aquí.</p></div>:<div className="table-scroll"><table className="invest-table"><thead><tr><th>CLIENTE</th><th>MONTO</th><th>INICIO</th><th>DÍAS</th><th>GANANCIA</th><th>RETIRO DESDE</th><th>ESTADO</th></tr></thead><tbody>{overview.map(item=><tr key={item.id}><td>{item.owner_email}</td><td>{formatUsd(item.principal_usd)}</td><td>{formatDate(item.started_at)}</td><td>{item.calc.daysElapsed}</td><td><strong className="gain-value">+{formatUsd(item.calc.earnings)}</strong></td><td>{formatDate(item.calc.availableAt)}</td><td><span className={`badge-status ${item.calc.canWithdraw?"mature":""}`}><i/>{item.calc.canWithdraw?"DISPONIBLE":"EN CURSO"}</span></td></tr>)}</tbody></table></div>}</section>
+    <section className="dash-panel dash-table-panel" id="retiros"><div className="panel-heading"><h2>Solicitudes de retiro</h2><span><Banknote size={15}/> {openRequests.length} pendientes · {formatUsd(owed)}</span></div>{requests.length===0?<div className="empty-state"><Banknote size={32}/><h3>No hay solicitudes de retiro</h3><p>Cuando un inversionista solicite su retiro aparecerá aquí y se te notificará.</p></div>:<div className="table-scroll"><table className="invest-table"><thead><tr><th>CLIENTE</th><th>CAPITAL</th><th>GANANCIAS</th><th>TOTAL A DESEMBOLSAR</th><th>SOLICITADO</th><th>ESTADO</th><th>ACCIONES</th></tr></thead><tbody>{requests.map(item=>{const amount=item.claim_amount_usd??item.calc.total;return <tr key={item.id}><td>{item.owner_email}</td><td>{formatUsd(item.principal_usd)}</td><td><strong className="gain-value">+{formatUsd(amount-item.principal_usd)}</strong></td><td><strong>{formatUsd(amount)}</strong></td><td>{formatDate(item.claim_requested_at||now)}</td><td><span className={`badge-status claim-${item.claim_status}`}><i/>{CLAIM_LABELS[item.claim_status!]}</span></td><td><ClaimActions investmentId={item.id} status={item.claim_status!} amount={amount} owner={item.owner_email||"el cliente"}/></td></tr>})}</tbody></table></div>}</section>
+    <section className="dash-panel dash-table-panel" id="inversiones"><div className="panel-heading"><h2>Inversiones de clientes</h2><span><ShieldCheck size={15}/> {investments.length} registros</span></div>{overview.length===0?<div className="empty-state"><FolderOpen size={32}/><h3>Aún no hay inversiones</h3><p>Las inversiones confirmadas aparecerán aquí.</p></div>:<div className="table-scroll"><table className="invest-table"><thead><tr><th>CLIENTE</th><th>MONTO</th><th>INICIO</th><th>DÍAS</th><th>GANANCIA</th><th>RETIRO DESDE</th><th>ESTADO</th></tr></thead><tbody>{overview.map(item=><tr key={item.id}><td>{item.owner_email}</td><td>{formatUsd(item.principal_usd)}</td><td>{formatDate(item.started_at)}</td><td>{item.calc.daysElapsed}</td><td><strong className="gain-value">+{formatUsd(item.calc.earnings)}</strong></td><td>{formatDate(item.calc.availableAt)}</td><td><span className={`badge-status ${item.claim_status?`claim-${item.claim_status}`:item.calc.canWithdraw?"mature":""}`}><i/>{item.claim_status?CLAIM_LABELS[item.claim_status]:item.calc.canWithdraw?"DISPONIBLE":"EN CURSO"}</span></td></tr>)}</tbody></table></div>}</section>
   </main></div>
   <AnimatePresence>{promptOpen&&!todaySet&&<DailyPrompt today={today} error={error?message:""} suggested={rates[yesterday]??DEFAULT_DAILY_RATE_PCT} onLater={()=>setPromptOpen(false)} onSave={async rate=>{const ok=await save(today,rate);if(ok){setPromptOpen(false);setTodayValue(String(rate));}return ok;}}/>}</AnimatePresence>
   </div>;

@@ -16,7 +16,7 @@ npm run dev
 
 Abrir **http://localhost:3000**.
 
-Por defecto, `NEXT_PUBLIC_DEMO_MODE=true`. En `/acceso` hay dos botones temporales de **acceso rápido** («Entrar como usuario» y «Entrar como administrador») que abren una sesión de demostración sin contraseña. **No se hacen cargos, no se crean inversiones reales y no se envían correos en modo demo.**
+Por defecto, `NEXT_PUBLIC_DEMO_MODE=true`. En `/acceso` hay dos botones temporales de **acceso rápido** («Ver como usuario» y «Ver como administrador») que abren una sesión de demostración sin contraseña. **No se hacen cargos, no se crean inversiones reales y no se envían correos en modo demo.**
 
 ### Usuarios y administrador
 
@@ -24,6 +24,7 @@ Por defecto, `NEXT_PUBLIC_DEMO_MODE=true`. En `/acceso` hay dos botones temporal
 - **Administrador (`/admin`):** configura cada día el porcentaje de ganancia. Si el día no tiene porcentaje se aplica **1.5 % por defecto**. Al entrar sin la tasa del día configurada aparece un aviso para fijarla; también puede editar los días anteriores desde el historial.
 - **Usuario (`/dashboard`):** ve su capital, las ganancias acumuladas (capital × tasa de cada día, sumadas día a día), la ganancia de hoy, los días transcurridos y la fecha desde la que puede solicitar el retiro.
 - En modo real, el rol se guarda en `public.profiles.role`. Para crear un administrador: registrar la cuenta y ejecutar `update public.profiles set role = 'admin' where email = '...'`.
+- **Retiros:** al cumplir el plazo mínimo, el usuario pulsa «Solicitar retiro» (capital + ganancias). Las ganancias se congelan en ese momento, el administrador ve la solicitud en `/admin` (aviso y contador en el menú; el panel se actualiza cada 30 s) y la marca como aprobada, rechazada o **desembolsada** al hacer el pago. Si Resend está configurado, también recibe un correo.
 - Para quitar los botones de acceso rápido: `NEXT_PUBLIC_QUICK_LOGIN=false`. En demostración, las tasas del administrador se guardan en una cookie del navegador.
 
 ## 2. Estructura simple
@@ -38,11 +39,13 @@ src/
     api/checkout/route.ts    # Crear sesión de pago verificada
     api/webhooks/stripe/     # Confirmar pago firmado y registrar plan
     api/claims/route.ts      # Solicitud de retiro tras el plazo mínimo
+    api/admin/claims/        # Aprobar / rechazar / marcar desembolsado (solo admin)
     api/admin/rates/         # Guardar el porcentaje diario (solo admin)
     api/demo-login/          # Acceso rápido temporal
     auth/callback/route.ts   # Confirmación de login
     privacidad/ y terminos/  # Textos preliminares
     globals.css              # Estilos heredados de panel/acceso
+    platform.css             # Login, paneles con colores de marca, retiros
     betterment-inspired.css  # Nuevo sistema editorial fintech y responsive
   components/
     landing.tsx              # Landing animada

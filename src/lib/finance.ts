@@ -12,6 +12,8 @@ export type Investment = {
   ends_at: string;
   status: string;
   claim_status?: string | null;
+  claim_requested_at?: string | null;
+  claim_amount_usd?: number | null;
   owner_email?: string;
 };
 

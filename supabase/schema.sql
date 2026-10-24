@@ -51,7 +51,11 @@ create table if not exists public.claims (
   expected_amount_usd numeric(18,2) not null check (expected_amount_usd > 0),
   status text not null default 'pending' check (status in ('pending','under_review','approved','rejected','settled')),
   email_status text not null default 'pending' check (email_status in ('pending','sent','failed')),
-  created_at timestamptz not null default now()
+  -- Fecha de la solicitud: las ganancias se congelan en este momento.
+  created_at timestamptz not null default now(),
+  -- Gestión del administrador (aprobado, rechazado o desembolsado).
+  resolved_at timestamptz,
+  resolved_by uuid references auth.users(id) on delete set null
 );
 
 create index if not exists idx_investments_user on public.investments (user_id, created_at desc);

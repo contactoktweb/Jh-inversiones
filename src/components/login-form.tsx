@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, KeyRound, LockKeyhole, Mail, ShieldCheck, UserRound, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, KeyRound, Mail, ShieldCheck, UserRound, Zap } from "lucide-react";
 import Logo from "./logo";
 import { getSupabaseBrowser } from "@/lib/client/supabase";
 import { isDemoMode } from "@/lib/config";
@@ -45,6 +45,15 @@ function InnerForm() {
 
   return <div className="auth-layout"><aside className="auth-left"><Logo/><div className="auth-quote"><span className="auth-tag">INVIERTE DESDE 50 USD</span><h1>Tu espacio.<br/>Tu visión.<br/><span>Tu movimiento.</span></h1><p>Consulta tu inversión, tus ganancias diarias y el plazo mínimo de un mes desde un solo lugar.</p></div><div className="auth-left-footer">JH INVERSIONES / TU PRÓXIMO PASO</div></aside>
   <main className="auth-right"><div className="auth-form"><Link className="auth-back" href="/"><ArrowLeft size={16}/> Volver al inicio</Link>
+    {quickLogin&&<section className="auth-quick" aria-labelledby="auth-quick-title">
+      <div className="auth-quick-head"><Zap size={16}/><span id="auth-quick-title">Ver la plataforma (acceso rápido)</span></div>
+      <div className="auth-quick-buttons">
+        <form method="POST" action="/api/demo-login"><input type="hidden" name="role" value="user"/><button type="submit" className="user"><span className="auth-quick-icon"><UserRound size={22}/></span><span><strong>Ver como usuario</strong><small>Inversión, ganancias y retiros</small></span><ArrowRight size={18}/></button></form>
+        <form method="POST" action="/api/demo-login"><input type="hidden" name="role" value="admin"/><button type="submit" className="admin"><span className="auth-quick-icon"><ShieldCheck size={22}/></span><span><strong>Ver como administrador</strong><small>Ganancia diaria y desembolsos</small></span><ArrowRight size={18}/></button></form>
+      </div>
+      <p>Entra sin contraseña con datos de demostración.</p>
+    </section>}
+    {quickLogin&&<div className="auth-divider"><span>o inicia sesión con tu cuenta</span></div>}
     <div className="auth-role-tabs" role="tablist" aria-label="Tipo de cuenta">
       <button type="button" role="tab" aria-selected={role==="user"} className={role==="user"?"active":""} onClick={()=>setRole("user")}><UserRound size={16}/> Usuario</button>
       <button type="button" role="tab" aria-selected={role==="admin"} className={role==="admin"?"active":""} onClick={()=>{setRole("admin");setMode("login")}}><ShieldCheck size={16}/> Administrador</button>
@@ -60,10 +69,6 @@ function InnerForm() {
       {message&&<div className={`auth-message ${error?"error":""}`} role="status">{message}</div>}
     </form>
     {role==="user"&&<button type="button" className="auth-switch" onClick={()=>{setMode(signup?"login":"signup");setMessage("")}}>{signup?"¿Ya tienes cuenta? Inicia sesión":"¿No tienes cuenta? Regístrate"}</button>}
-    {quickLogin&&<div className="auth-quick"><div className="auth-quick-head"><Zap size={16}/><span>Acceso rápido (temporal)</span></div><p>Entra sin contraseña con datos de demostración.</p><div className="auth-quick-buttons">
-      <form method="POST" action="/api/demo-login"><input type="hidden" name="role" value="user"/><button type="submit"><UserRound size={17}/> Entrar como usuario</button></form>
-      <form method="POST" action="/api/demo-login"><input type="hidden" name="role" value="admin"/><button type="submit" className="admin"><LockKeyhole size={17}/> Entrar como administrador</button></form>
-    </div></div>}
   </div></main></div>;
 }
 

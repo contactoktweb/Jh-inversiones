@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import DashboardView from "@/components/dashboard-view";
 import { makeDemoInvestments, type Investment } from "@/lib/finance";
 import { getSupabaseServer } from "@/lib/server/supabase";
-import { getRates, getSession } from "@/lib/server/session";
+import { getDemoClaims, getRates, getSession, withClaims } from "@/lib/server/session";
 
 export const metadata: Metadata = { title: "Mi panel", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   if (!session) redirect("/acceso?next=%2Fdashboard");
   if (session.role === "admin") redirect("/admin");
   const rates = await getRates(session);
-  if (session.kind === "demo") return <DashboardView demo userEmail={session.email} investments={makeDemoInvestments()} rates={rates} renderedAt={Date.now()} />;
+  if (session.kind === "demo") return <DashboardView demo userEmail={session.email} investments={withClaims(makeDemoInvestments(), await getDemoClaims())} rates={rates} renderedAt={Date.now()} />;
   const supabase = await getSupabaseServer();
   if (!supabase) redirect("/acceso");
   const {data: investments, error} = await supabase.from("investments")
@@ -21,12 +21,14 @@ export default async function DashboardPage() {
     .eq("user_id", session.userId).order("created_at",{ascending:false});
   if (error) throw new Error("No fue posible cargar las inversiones del usuario.");
   const {data: claims} = await supabase.from("claims")
-    .select("investment_id,status").eq("user_id",session.userId);
-  const statuses = new Map((claims||[]).map(claim=>[claim.investment_id,claim.status]));
+    .select("investment_id,status,created_at,expected_amount_usd").eq("user_id",session.userId);
+  const byInvestment = new Map((claims||[]).map(claim=>[claim.investment_id,claim]));
   const positions: Investment[] = (investments||[]).map(investment=>({
     ...investment,
     principal_usd: Number(investment.principal_usd),
-    claim_status: statuses.get(investment.id)||null,
+    claim_status: byInvestment.get(investment.id)?.status||null,
+    claim_requested_at: byInvestment.get(investment.id)?.created_at||null,
+    claim_amount_usd: byInvestment.has(investment.id)?Number(byInvestment.get(investment.id)!.expected_amount_usd):null,
   }));
   return <DashboardView demo={false} userEmail={session.email} investments={positions} rates={rates} renderedAt={Date.now()}/>;
 }

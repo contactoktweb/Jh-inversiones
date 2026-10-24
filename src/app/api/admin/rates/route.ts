@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/server/admin";
-import { DEMO_RATES_COOKIE, getDemoRates, getSession } from "@/lib/server/session";
+import { DEMO_RATES_COOKIE, demoCookieOptions, getDemoRates, getSession } from "@/lib/server/session";
 import { isValidDayKey, isValidRate, todayKey } from "@/lib/rates";
 
 export const runtime="nodejs";
@@ -22,7 +22,7 @@ export async function POST(request:Request){
   if(session.kind==="demo"){
     const rates={...(await getDemoRates()),[date]:rate};
     const response=NextResponse.json({message:`Tasa del ${date} guardada: ${rate}%.`,date,ratePct:rate});
-    response.cookies.set(DEMO_RATES_COOKIE,JSON.stringify(rates),{httpOnly:true,sameSite:"lax",secure:process.env.NODE_ENV==="production",path:"/",maxAge:60*60*24*120});
+    response.cookies.set(DEMO_RATES_COOKIE,JSON.stringify(rates),demoCookieOptions(120));
     return response;
   }
   try{

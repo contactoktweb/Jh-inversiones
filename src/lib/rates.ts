@@ -29,11 +29,16 @@ export function recentDayKeys(count: number, now = Date.now()) {
   return Array.from({ length: count }, (_, i) => dayKey(now - i * DAY));
 }
 
-export type EarningsPosition = { principal_usd: number; started_at: string; status: string };
+export type ClaimStatus = "pending" | "approved" | "rejected" | "settled";
+export type EarningsPosition = { principal_usd: number; started_at: string; status: string; claim_status?: string | null; claim_requested_at?: string | null };
+
+/** Una solicitud de retiro vigente (no rechazada) congela las ganancias en su fecha. */
+export const hasActiveClaim = (position: EarningsPosition) => Boolean(position.claim_status && position.claim_status !== "rejected");
 
 export function calculateEarnings(position: EarningsPosition, rates: DailyRates, now = Date.now()) {
   const started = new Date(position.started_at).getTime();
-  const elapsed = Math.max(0, now - started);
+  const frozenAt = hasActiveClaim(position) && position.claim_requested_at ? new Date(position.claim_requested_at).getTime() : Infinity;
+  const elapsed = Math.max(0, Math.min(now, frozenAt) - started);
   const fullDays = Math.floor(elapsed / DAY);
   let earnings = 0;
   for (let i = 0; i < fullDays; i++) earnings += position.principal_usd * rateFor(rates, dayKey(started + i * DAY)) / 100;
@@ -50,7 +55,7 @@ export function calculateEarnings(position: EarningsPosition, rates: DailyRates,
     availableAt,
     termProgress,
     currentRate,
-    canWithdraw: termProgress >= 1 && position.status === "active",
+    canWithdraw: termProgress >= 1 && position.status === "active" && !hasActiveClaim(position),
   };
 }
 

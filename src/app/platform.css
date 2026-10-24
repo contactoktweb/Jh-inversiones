@@ -1,21 +1,28 @@
 /* Inicio de sesión por rol, acceso rápido y panel de administración. */
-.auth-back{margin-bottom:40px}
+.auth-back{margin-bottom:28px}
 .auth-role-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border:1px solid #ffffff1c;border-radius:10px;background:#111923;margin-bottom:30px}
 .auth-role-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:7px;background:transparent;color:#9aaba9;padding:11px 10px;font-size:13px;font-weight:800}
 .auth-role-tabs button.active{background:var(--mint);color:#142016}
 .auth-form form .auth-input-shell+label{margin-top:18px}
 .auth-switch{display:block;margin:18px auto 0;border:0;background:none;color:#a9bab4;font-size:12px;text-decoration:underline;text-underline-offset:3px}
 .auth-switch:hover{color:var(--mint)}
-.auth-quick{border:1px dashed #d6fc7455;background:#d6fc740b;border-radius:10px;padding:18px;margin-top:30px}
-.auth-quick-head{display:flex;align-items:center;gap:8px;color:var(--mint);font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
-.auth-quick p{font-size:12px;color:#8e9d9e;margin:8px 0 14px}
-.auth-quick-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.auth-quick{border:1px solid #ffd34f55;background:linear-gradient(135deg,#ffd34f14,#2469f614);border-radius:14px;padding:18px;margin:0 0 6px}
+.auth-quick-head{display:flex;align-items:center;gap:8px;color:var(--mint);font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-bottom:14px}
+.auth-quick>p{font-size:12px;color:#a9b6e0;margin:12px 0 0}
+.auth-quick-buttons{display:grid;gap:10px}
 .auth-quick-buttons form{margin:0}
-.auth-quick-buttons button{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 10px;border-radius:8px;border:1px solid #54665b;background:#151f28;color:#f5f6f1;font-size:12px;font-weight:800}
-.auth-quick-buttons button:hover{border-color:var(--mint);color:var(--mint)}
-.auth-quick-buttons button.admin{border-color:#bcaffc66}
-.auth-quick-buttons button.admin:hover{border-color:var(--violet);color:var(--violet)}
-@media(max-width:480px){.auth-quick-buttons{grid-template-columns:1fr}}
+.auth-quick-buttons button{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:14px 16px;border-radius:11px;border:1px solid transparent;font-size:14px;transition:transform .2s,box-shadow .2s}
+.auth-quick-buttons button>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:3px}
+.auth-quick-buttons strong{font-size:15px}
+.auth-quick-buttons small{font-size:12px;opacity:.8}
+.auth-quick-icon{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
+.auth-quick-buttons button.user{background:linear-gradient(135deg,#ffe072,#ffd34f);color:#0e173e}
+.auth-quick-buttons button.user .auth-quick-icon{background:#0e173e1a}
+.auth-quick-buttons button.admin{background:linear-gradient(135deg,#2469f6,#1748c4);color:#fff;border-color:#ffffff26}
+.auth-quick-buttons button.admin .auth-quick-icon{background:#ffffff1f}
+.auth-quick-buttons button:hover{transform:translateY(-2px);box-shadow:0 12px 26px #0006}
+.auth-divider{display:flex;align-items:center;gap:12px;color:#a9b6e0;font-size:11px;letter-spacing:.6px;text-transform:uppercase;margin:26px 0}
+.auth-divider:before,.auth-divider:after{content:"";flex:1;height:1px;background:#ffffff1f}
 
 .dash-mobile-signout{display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:inherit;font-size:12px;font-weight:700}
 .gain-value{color:var(--mint)}
@@ -58,5 +65,99 @@
 .rate-modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
 .rate-modal-actions>*{flex:1;min-width:150px}
 
-.bm-min-badge{display:inline-flex;align-items:center;gap:8px;margin:0 0 22px;padding:9px 16px;border-radius:999px;background:#ffd34f;color:#141414;font-weight:800;font-size:14px;letter-spacing:.2px;box-shadow:0 10px 30px #ffd34f40}
+.bm-min-badge{display:flex;width:fit-content;align-items:center;gap:8px;margin:0 0 22px;padding:9px 16px;border-radius:999px;background:#ffd34f;color:#141414;font-weight:800;font-size:14px;letter-spacing:.2px;box-shadow:0 10px 30px #ffd34f40}
 .bm-min-badge svg{flex-shrink:0}
+
+/* Solicitudes de retiro */
+.nav-badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#ff6b5b;color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center}
+.withdraw-alert{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #ff8a7a77;background:#ff6b5b1c;color:#ffd9d3;border-radius:9px;padding:13px 16px;font-size:13px;margin-bottom:14px}
+.withdraw-alert svg{color:#ff8a7a;flex-shrink:0}
+.withdraw-alert span{flex:1;min-width:220px}
+.withdraw-alert a{border-radius:6px;background:#ff8a7a;color:#2a0905;font-weight:800;font-size:11px;padding:8px 12px}
+.withdraw-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.withdraw-list li{display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:center;padding:14px 16px;border:1px solid #ffffff17;border-radius:10px;background:#ffffff06}
+.withdraw-list li>div{display:flex;flex-direction:column;gap:4px}
+.withdraw-list strong{font-size:18px}
+.withdraw-list small{color:#a9b6e0;font-size:11px}
+.withdraw-list p{grid-column:1/-1;margin:0;color:#a9b6e0;font-size:12px;line-height:1.5}
+.badge-status.claim-pending{color:#ffb27a}.badge-status.claim-pending i{background:#ffb27a}
+.badge-status.claim-approved{color:#7fb2ff}.badge-status.claim-approved i{background:#7fb2ff}
+.badge-status.claim-settled{color:#5fe0a5}.badge-status.claim-settled i{background:#5fe0a5}
+.badge-status.claim-rejected{color:#ff8a7a}.badge-status.claim-rejected i{background:#ff8a7a}
+.claim-buttons{display:flex;gap:6px;flex-wrap:wrap;max-width:330px}
+.claim-buttons button{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:7px 10px;font-size:11px;font-weight:800;white-space:nowrap;border:1px solid transparent}
+.claim-settle{background:#5fe0a5;color:#05291a}
+.claim-approve{background:transparent;border-color:#7fb2ff88!important;color:#7fb2ff}
+.claim-reject{background:transparent;border-color:#ff8a7a77!important;color:#ff8a7a}
+.claim-done{color:#a9b6e0;font-size:11px;font-weight:700}
+
+/* Paneles con los colores de la web: azul marino y dorado */
+.dash-layout,.auth-layout{--mint:#ffd34f;--violet:#7fb2ff}
+.dash-layout{background:#04092b}
+.dash-sidebar{background:#070e46;border-right-color:#ffffff14}
+.dash-group-label{color:#7d8bc4}
+.dash-nav a{color:#a9b6e0}
+.dash-nav a.current{background:#ffd34f1c;color:#ffd34f}
+.sidebar-help{background:linear-gradient(135deg,#1748c4,#0c2f96);border-color:#ffffff1f}
+.sidebar-help p{color:#d5e1ff}
+.sidebar-foot{color:#a9b6e0}
+.sidebar-foot button,.dash-mobile-signout{color:#d5e1ff}
+.dash-top>span{color:#e1e8ff}
+.dash-live{color:#a9b6e0}
+.dash-live i{box-shadow:0 0 0 4px #ffd34f22}
+.dash-avatar{background:linear-gradient(135deg,#ffe072,#ffb72b);color:#0e173e;border-color:#fff3c4}
+.dash-welcome h1,.dash-layout h2,.rate-modal h2{font-weight:400;letter-spacing:.03em;text-transform:uppercase}
+.dash-welcome p,.dash-date{color:#a9b6e0}
+.demo-notice{background:#2469f61c;border-color:#2469f655;color:#d5e1ff}
+.metric-card,.dash-panel{background:#0a1352;border-color:#ffffff17}
+.metric-card.main-metric{background:radial-gradient(circle at 90% 20%,#ffd34f26,transparent 52%),linear-gradient(135deg,#1748c4,#0c2f96);border-color:#ffffff2b}
+.metric-ambient{border-color:#ffd34f4d;box-shadow:0 0 0 22px #ffd34f10,0 0 0 44px #ffd34f08}
+.metric-label,.metric-foot,.panel-heading>span,.panel-heading>a,.summary-row span,.summary-ring-inner span,.chart-note,.dash-chart-dates,.dash-legal,.cell-sub,.invest-main small,.empty-state{color:#a9b6e0}
+.invest-table th{color:#8fa0d8;border-bottom-color:#ffffff1f}
+.invest-table td{color:#e1e8ff;border-bottom-color:#ffffff12}
+.invest-icon{background:#ffd34f1f}
+.mini-progress,.summary-row i.dim{background:#26337a}
+.summary-ring{background:conic-gradient(var(--mint) var(--angle),#26337a 0)}
+.summary-ring:before{background:#0a1352}
+.dash-chart-grid line{stroke:#ffffff17}
+.dash-chart-line{filter:drop-shadow(0 0 6px #ffd34f55)}
+.badge-status.mature{color:#7fb2ff}.badge-status.mature i{background:#7fb2ff}
+.claim-action{border-color:#ffd34f99;background:#ffd34f14}
+.claim-action:hover:not(:disabled){color:#0e173e}
+.claim-feedback{color:#ffd34f}
+.rate-alert{border-color:#ffd34f66;background:#ffd34f14;color:#fff1c2}
+.rate-alert svg{color:#ffd34f}
+.rate-alert button,.rate-primary{background:linear-gradient(135deg,#ffe072,#ffd34f);color:#0e173e}
+.rate-input{background:#060d3a;border-color:#2b3a8f}
+.rate-form label{color:#e1e8ff}
+.rate-history li{border-bottom-color:#ffffff12}
+.rate-history li>span{color:#e1e8ff}
+.rate-history small,.rate-history .rate-default{color:#a9b6e0}
+.rate-modal-backdrop{background:#020624cc}
+.rate-modal{background:#0a1352;border-color:#ffffff24}
+.rate-modal p{color:#a9b6e0}
+.rate-modal-icon{background:#ffd34f1f;color:#ffd34f}
+.auth-layout{background:#04092b}
+.auth-left{background:radial-gradient(circle at 85% 90%,#2469f666,transparent 45%),linear-gradient(145deg,#0c2f96,#070e46 65%)}
+.auth-left:before{border-color:#ffd34f40;box-shadow:0 0 0 90px #ffd34f0d,0 0 0 180px #ffd34f06}
+.auth-quote h1{font-weight:400;letter-spacing:.02em}
+.auth-quote p,.auth-left-footer,.auth-back,.auth-form>p{color:#a9b6e0}
+.auth-form h2{font-weight:400;letter-spacing:.02em;text-transform:uppercase;font-size:30px}
+.auth-input-shell{background:#0a1352;border-color:#2b3a8f}
+.auth-input-shell svg{color:#8fa0d8}
+.auth-submit{background:linear-gradient(135deg,#ffe072,#ffd34f);color:#0e173e}
+.auth-role-tabs{background:#070e46;border-color:#ffffff1c}
+.auth-role-tabs button{color:#a9b6e0}
+.auth-role-tabs button.active{color:#0e173e}
+.auth-switch{color:#a9b6e0}
+
+/* Rendimiento del scroll: se pinta solo lo visible y las animaciones van en su propia capa */
+.bm-halo-ring,.bm-orbit-energy,.bm-float-glass{will-change:transform}
+.bm-section,.bm-end,.bm-footer{content-visibility:auto;contain-intrinsic-size:auto 900px}
+/* Sombra estática en lugar de filter sobre la tarjeta del hero, y pulso animado solo con transform/opacity */
+.bm-preview-wrap{filter:none}
+.bm-preview-wrap .bm-app-window{box-shadow:0 32px 48px rgba(4,8,38,.55)}
+.pulse-dot{position:relative;animation:none;box-shadow:none}
+.pulse-dot:after{content:"";position:absolute;inset:-4px;border-radius:50%;background:rgba(38,189,133,.3);animation:bm-pulse-ring 2s ease-out infinite}
+@keyframes bm-pulse-ring{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.6);opacity:0}}
+@media(prefers-reduced-motion:reduce){.pulse-dot:after{animation:none}}
