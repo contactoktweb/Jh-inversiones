@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getPlan } from "@/lib/plans";
+import { planForAmount } from "@/lib/plans";
+import { MIN_INVESTMENT_USD } from "@/lib/rates";
+
+const MAX_INVESTMENT_USD=100_000;
 import { isDemoMode, paymentsApproved, siteUrl } from "@/lib/config";
 import { getSupabaseServer } from "@/lib/server/supabase";
 
@@ -21,20 +24,20 @@ export async function POST(request: Request){
   if(authError||!user)return NextResponse.json({error:"Debes iniciar sesión."},{status:401});
   let body:unknown;
   try{body=await request.json()}catch{return NextResponse.json({error:"JSON inválido."},{status:400});}
-  const planId=(body&&typeof body==="object"&&"planId" in body&&(body as {planId:unknown}).planId);
-  if(typeof planId!=="string")return NextResponse.json({error:"Selecciona un plan válido."},{status:400});
-  const plan=getPlan(planId);
-  if(!plan)return NextResponse.json({error:"Plan inexistente."},{status:400});
+  const amount=(body&&typeof body==="object"&&"amountUsd" in body&&(body as {amountUsd:unknown}).amountUsd);
+  if(typeof amount!=="number"||!Number.isInteger(amount)||amount<MIN_INVESTMENT_USD||amount>MAX_INVESTMENT_USD)
+    return NextResponse.json({error:`El monto debe ser un número entero entre ${MIN_INVESTMENT_USD} y ${MAX_INVESTMENT_USD} USD.`},{status:400});
+  const plan=planForAmount(amount);
   try{
     const stripe=new Stripe(process.env.STRIPE_SECRET_KEY);
-    // Monto y plazo siempre determinados por el servidor, jamás recibidos del navegador.
+    // El monto se valida en el servidor; el plan y el plazo se derivan de él, nunca del navegador.
     const session=await stripe.checkout.sessions.create({
       mode:"payment",
       payment_method_types:["card"],
       customer_email:user.email,
       client_reference_id:user.id,
-      metadata:{plan_id:plan.id},
-      line_items:[{price_data:{currency:"cop",unit_amount:plan.priceCop*100,product_data:{name:`JH · ${plan.name}`,description:`Periodo de ${plan.durationDays} días. Los resultados no están garantizados.`}},quantity:1}],
+      metadata:{plan_id:plan.id,amount_usd:String(amount)},
+      line_items:[{price_data:{currency:"usd",unit_amount:amount*100,product_data:{name:`JH · ${plan.name}`,description:`Plazo mínimo de ${plan.durationDays} días. Los resultados no están garantizados.`}},quantity:1}],
       success_url:`${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:`${siteUrl}/#planes`,
     });

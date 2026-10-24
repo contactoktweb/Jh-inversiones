@@ -1,0 +1,62 @@
+/* Inicio de sesión por rol, acceso rápido y panel de administración. */
+.auth-back{margin-bottom:40px}
+.auth-role-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border:1px solid #ffffff1c;border-radius:10px;background:#111923;margin-bottom:30px}
+.auth-role-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:7px;background:transparent;color:#9aaba9;padding:11px 10px;font-size:13px;font-weight:800}
+.auth-role-tabs button.active{background:var(--mint);color:#142016}
+.auth-form form .auth-input-shell+label{margin-top:18px}
+.auth-switch{display:block;margin:18px auto 0;border:0;background:none;color:#a9bab4;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.auth-switch:hover{color:var(--mint)}
+.auth-quick{border:1px dashed #d6fc7455;background:#d6fc740b;border-radius:10px;padding:18px;margin-top:30px}
+.auth-quick-head{display:flex;align-items:center;gap:8px;color:var(--mint);font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.auth-quick p{font-size:12px;color:#8e9d9e;margin:8px 0 14px}
+.auth-quick-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.auth-quick-buttons form{margin:0}
+.auth-quick-buttons button{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 10px;border-radius:8px;border:1px solid #54665b;background:#151f28;color:#f5f6f1;font-size:12px;font-weight:800}
+.auth-quick-buttons button:hover{border-color:var(--mint);color:var(--mint)}
+.auth-quick-buttons button.admin{border-color:#bcaffc66}
+.auth-quick-buttons button.admin:hover{border-color:var(--violet);color:var(--violet)}
+@media(max-width:480px){.auth-quick-buttons{grid-template-columns:1fr}}
+
+.dash-mobile-signout{display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:inherit;font-size:12px;font-weight:700}
+.gain-value{color:var(--mint)}
+.cell-sub{display:block;color:#7d8f93;font-size:10px;margin-top:5px;font-weight:600}
+.dash-legal svg{vertical-align:-2px}
+
+.rate-alert{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #ffc95a66;background:#ffc95a14;color:#ffe2a6;border-radius:9px;padding:13px 16px;font-size:12px;margin-bottom:22px}
+.rate-alert svg{color:#ffc95a;flex-shrink:0}
+.rate-alert span{flex:1;min-width:200px}
+.rate-alert button{border:0;border-radius:6px;background:#ffc95a;color:#241a05;font-weight:800;font-size:11px;padding:8px 12px}
+.rate-form label{display:block;font-size:12px;font-weight:800;margin-bottom:10px;color:#cdd8d3}
+.rate-form-row{display:flex;gap:10px;flex-wrap:wrap}
+.rate-input{display:flex;align-items:center;border:1px solid #475559;background:#0f1720;border-radius:8px;padding:0 14px;flex:1;min-width:120px}
+.rate-input:focus-within{border-color:var(--mint)}
+.rate-input input{background:transparent;border:0;color:#f6fbf7;outline:none;width:100%;padding:14px 0;font-size:22px;font-weight:800}
+.rate-input span{color:#829697;font-weight:800;font-size:18px}
+.rate-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;background:var(--mint);color:#142016;font-weight:800;font-size:13px;padding:0 20px;min-height:50px}
+.rate-ghost{border:1px solid #ffffff2a;border-radius:8px;background:transparent;color:#c3cfcb;font-weight:700;font-size:13px;padding:0 18px;min-height:50px}
+.rate-presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.rate-presets button{border:1px solid #ffffff22;background:#ffffff08;color:#c3cfcb;border-radius:20px;padding:6px 13px;font-size:12px;font-weight:700}
+.rate-presets button.active{border-color:var(--mint);color:var(--mint)}
+.rate-history{list-style:none;margin:0;padding:0;max-height:330px;overflow:auto}
+.rate-history li{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #ffffff10;font-size:13px;min-height:52px}
+.rate-history li>span{flex:1;color:#c3cfcb}
+.rate-history small{color:#7d8f93;font-weight:600}
+.rate-history strong{font-weight:800}
+.rate-history .rate-default{color:#8e9d9e}
+.rate-edit,.rate-inline button{display:grid;place-items:center;width:30px;height:30px;border:1px solid #ffffff22;border-radius:6px;background:transparent;color:#c3cfcb;flex-shrink:0}
+.rate-edit:hover,.rate-inline button:hover{border-color:var(--mint);color:var(--mint)}
+.rate-inline{display:flex;align-items:center;gap:6px;margin:0}
+.rate-inline .rate-input{width:110px;min-width:0;flex:none;padding:0 10px}
+.rate-inline .rate-input input{font-size:14px;padding:6px 0}
+.rate-inline .rate-input span{font-size:13px}
+.rate-modal-backdrop{position:fixed;inset:0;z-index:200;background:#05090ecc;backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px}
+.rate-modal{width:min(440px,100%);background:#151e29;border:1px solid #ffffff1f;border-radius:16px;padding:28px;box-shadow:0 30px 80px #0009}
+.rate-modal-icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:#ffc95a1f;color:#ffc95a;margin-bottom:16px}
+.rate-modal h2{font-size:20px;margin:0 0 10px}
+.rate-modal p{color:#a3b1b0;font-size:13px;line-height:1.7;margin:0 0 20px}
+.rate-modal label{display:block;font-size:12px;font-weight:800;margin-bottom:10px}
+.rate-modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.rate-modal-actions>*{flex:1;min-width:150px}
+
+.bm-min-badge{display:inline-flex;align-items:center;gap:8px;margin:0 0 22px;padding:9px 16px;border-radius:999px;background:#ffd34f;color:#141414;font-weight:800;font-size:14px;letter-spacing:.2px;box-shadow:0 10px 30px #ffd34f40}
+.bm-min-badge svg{flex-shrink:0}

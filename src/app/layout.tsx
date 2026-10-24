@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { siteUrl } from "@/lib/config";
 import "./globals.css";
 import "./betterment-inspired.css";
+import "./platform.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

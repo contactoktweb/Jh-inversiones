@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getPlan } from "@/lib/plans";
+import { planForAmount } from "@/lib/plans";
+import { MIN_INVESTMENT_USD } from "@/lib/rates";
 import { getSupabaseAdmin } from "@/lib/server/admin";
 import { paymentsApproved, isDemoMode } from "@/lib/config";
 
@@ -18,9 +19,9 @@ export async function POST(request:Request){
   const session=event.data.object as Stripe.Checkout.Session;
   if(session.mode!=="payment"||session.payment_status!=="paid")return NextResponse.json({received:true});
   const userId=session.client_reference_id;
-  const planId=session.metadata?.plan_id;
-  const plan=planId?getPlan(planId):undefined;
-  if(!userId||!plan||session.currency!=="cop"||session.amount_total!==plan.priceCop*100){
+  const amount=Number(session.metadata?.amount_usd);
+  const plan=Number.isInteger(amount)&&amount>=MIN_INVESTMENT_USD?planForAmount(amount):undefined;
+  if(!userId||!plan||plan.id!==session.metadata?.plan_id||session.currency!=="usd"||session.amount_total!==amount*100){
     console.error("webhook_unexpected_session",session.id);
     return NextResponse.json({error:"Datos de pago no corresponden al plan."},{status:400});
   }
@@ -29,8 +30,7 @@ export async function POST(request:Request){
   try{
     const admin=getSupabaseAdmin();
     const {error}=await admin.from("investments").insert({
-      user_id:userId,plan_id:plan.id,principal_cop:plan.priceCop,
-      illustrative_return_pct:plan.illustrativeReturnPct,
+      user_id:userId,plan_id:plan.id,principal_usd:amount,
       started_at:now.toISOString(),ends_at:ends.toISOString(),
       stripe_session_id:session.id,status:"active",
     });

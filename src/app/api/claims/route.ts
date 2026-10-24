@@ -3,7 +3,9 @@ import { Resend } from "resend";
 import { isDemoMode } from "@/lib/config";
 import { getSupabaseServer } from "@/lib/server/supabase";
 import { getSupabaseAdmin } from "@/lib/server/admin";
-import { calculatePosition, formatCop, type Investment } from "@/lib/finance";
+import { formatUsd } from "@/lib/finance";
+import { calculateEarnings } from "@/lib/rates";
+import { getRates } from "@/lib/server/session";
 
 export const runtime="nodejs";
 function escapeHtml(s:string){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]||c));}
@@ -24,12 +26,12 @@ export async function POST(request:Request){
   if(typeof id!=="string"||!/^[0-9a-f-]{36}$/i.test(id))return NextResponse.json({error:"Identificador inválido."},{status:400});
   // La consulta con RLS garantiza que el usuario sea propietario de la posición.
   const {data:row,error:lookupError}=await supabase.from("investments")
-    .select("id,plan_id,principal_cop,illustrative_return_pct,started_at,ends_at,status")
+    .select("id,plan_id,principal_usd,started_at,ends_at,status")
     .eq("id",id).eq("user_id",user.id).maybeSingle();
   if(lookupError||!row)return NextResponse.json({error:"Plan no encontrado."},{status:404});
-  const position:Investment={...row,principal_cop:Number(row.principal_cop),illustrative_return_pct:Number(row.illustrative_return_pct)};
-  const calc=calculatePosition(position);
-  if(!calc.canClaim)return NextResponse.json({error:"Este plan todavía no cumple el plazo o no admite solicitudes."},{status:409});
+  const position={...row,principal_usd:Number(row.principal_usd)};
+  const calc=calculateEarnings(position,await getRates({kind:"real",role:"user",email:user.email||"",userId:user.id}));
+  if(!calc.canWithdraw)return NextResponse.json({error:"Esta inversión todavía no cumple el plazo mínimo de 30 días."},{status:409});
   try{
     const admin=getSupabaseAdmin();
     const {data:prior}=await admin.from("claims").select("id,email_status").eq("investment_id",id).maybeSingle();
@@ -37,7 +39,7 @@ export async function POST(request:Request){
     let claimId=prior?.id;
     if(!claimId){
       const {data:created,error:insertError}=await admin.from("claims").insert({
-        user_id:user.id,investment_id:id,expected_amount_cop:calc.projectedTotal,
+        user_id:user.id,investment_id:id,expected_amount_usd:calc.total,
         status:"pending",email_status:"pending",
       }).select("id").single();
       if(insertError){
@@ -49,11 +51,11 @@ export async function POST(request:Request){
     const resend=new Resend(process.env.RESEND_API_KEY);
     const result=await resend.emails.send({
       from:process.env.RESEND_FROM_EMAIL!,to:process.env.ADMIN_NOTIFICATION_EMAIL!,
-      subject:`JH Inversiones · Nueva solicitud ${id.slice(0,8)}`,
-      html:`<div style="font-family:sans-serif;line-height:1.7"><h2>Nueva solicitud de revisión</h2><p><strong>Usuario:</strong> ${escapeHtml(user.email||user.id)}</p><p><strong>ID de posición:</strong> ${escapeHtml(id)}</p><p><strong>Plan:</strong> ${escapeHtml(position.plan_id)}</p><p><strong>Valor base:</strong> ${escapeHtml(formatCop(position.principal_cop))}</p><p><strong>Importe teórico:</strong> ${escapeHtml(formatCop(calc.projectedTotal))}</p><p>La solicitud requiere validación administrativa. Este correo no ordena ni confirma ningún pago.</p></div>`,
+      subject:`JH Inversiones · Solicitud de retiro ${id.slice(0,8)}`,
+      html:`<div style="font-family:sans-serif;line-height:1.7"><h2>Nueva solicitud de retiro</h2><p><strong>Usuario:</strong> ${escapeHtml(user.email||user.id)}</p><p><strong>ID de posición:</strong> ${escapeHtml(id)}</p><p><strong>Plan:</strong> ${escapeHtml(position.plan_id)}</p><p><strong>Capital:</strong> ${escapeHtml(formatUsd(position.principal_usd))}</p><p><strong>Ganancias:</strong> ${escapeHtml(formatUsd(calc.earnings))}</p><p><strong>Total solicitado:</strong> ${escapeHtml(formatUsd(calc.total))}</p><p>La solicitud requiere validación administrativa. Este correo no ordena ni confirma ningún pago.</p></div>`,
     });
     if(result.error){await admin.from("claims").update({email_status:"failed"}).eq("id",claimId);throw new Error("No se pudo entregar el correo de notificación.");}
     await admin.from("claims").update({email_status:"sent"}).eq("id",claimId);
-    return NextResponse.json({message:"Solicitud recibida y notificada. Un administrador la revisará."});
+    return NextResponse.json({message:"Solicitud de retiro recibida. Un administrador la revisará."});
   }catch(e){console.error("claim_error",e instanceof Error?e.message:"Error inesperado");return NextResponse.json({error:"No pudimos completar la notificación. Puedes reintentar más tarde."},{status:502});}
 }

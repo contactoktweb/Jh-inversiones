@@ -16,7 +16,15 @@ npm run dev
 
 Abrir **http://localhost:3000**.
 
-Por defecto, `NEXT_PUBLIC_DEMO_MODE=true`. Puedes explorar toda la landing, cambiar el importe del simulador, entrar al dashboard, ver el avance temporal de los planes de ejemplo y pulsar «Reclamar recompensa» en el plan ya finalizado. **No se hacen cargos, no se crean inversiones reales y no se envían correos en modo demo.**
+Por defecto, `NEXT_PUBLIC_DEMO_MODE=true`. En `/acceso` hay dos botones temporales de **acceso rápido** («Entrar como usuario» y «Entrar como administrador») que abren una sesión de demostración sin contraseña. **No se hacen cargos, no se crean inversiones reales y no se envían correos en modo demo.**
+
+### Usuarios y administrador
+
+- **Inversión mínima:** 50 USD. **Plazo mínimo:** 1 mes (30 días) antes de poder solicitar retiro (`src/lib/rates.ts`).
+- **Administrador (`/admin`):** configura cada día el porcentaje de ganancia. Si el día no tiene porcentaje se aplica **1.5 % por defecto**. Al entrar sin la tasa del día configurada aparece un aviso para fijarla; también puede editar los días anteriores desde el historial.
+- **Usuario (`/dashboard`):** ve su capital, las ganancias acumuladas (capital × tasa de cada día, sumadas día a día), la ganancia de hoy, los días transcurridos y la fecha desde la que puede solicitar el retiro.
+- En modo real, el rol se guarda en `public.profiles.role`. Para crear un administrador: registrar la cuenta y ejecutar `update public.profiles set role = 'admin' where email = '...'`.
+- Para quitar los botones de acceso rápido: `NEXT_PUBLIC_QUICK_LOGIN=false`. En demostración, las tasas del administrador se guardan en una cookie del navegador.
 
 ## 2. Estructura simple
 
@@ -24,11 +32,14 @@ Por defecto, `NEXT_PUBLIC_DEMO_MODE=true`. Puedes explorar toda la landing, camb
 src/
   app/
     page.tsx                 # Landing
-    dashboard/page.tsx       # Panel privado / demo
-    acceso/page.tsx          # Acceso por enlace de correo
+    dashboard/page.tsx       # Panel del usuario
+    admin/page.tsx           # Panel del administrador (tasa diaria)
+    acceso/page.tsx          # Inicio de sesión usuario / administrador
     api/checkout/route.ts    # Crear sesión de pago verificada
     api/webhooks/stripe/     # Confirmar pago firmado y registrar plan
-    api/claims/route.ts      # Revisar plazo y notificar a administración
+    api/claims/route.ts      # Solicitud de retiro tras el plazo mínimo
+    api/admin/rates/         # Guardar el porcentaje diario (solo admin)
+    api/demo-login/          # Acceso rápido temporal
     auth/callback/route.ts   # Confirmación de login
     privacidad/ y terminos/  # Textos preliminares
     globals.css              # Estilos heredados de panel/acceso
@@ -37,14 +48,16 @@ src/
     landing.tsx              # Landing animada
     dashboard-view.tsx       # Dashboard y reclamaciones
     checkout-button.tsx      # Botón de compra
-    login-form.tsx           # Enlace mágico
+    login-form.tsx           # Correo + contraseña y acceso rápido
+    admin-view.tsx           # Panel de administración
     nav.tsx y logo.tsx       # Navegación y marca
   lib/
     plans.ts                 # Cambiar todos los planes desde aquí
-    finance.ts               # Cálculos de tiempo, progreso, moneda
+    rates.ts                 # Tasa diaria, plazo mínimo y cálculo de ganancias
+    finance.ts               # Formato de moneda/fechas y datos demo
     config.ts                # Modo demo y configuración
     client/supabase.ts       # Cliente de autenticación
-    server/                  # Supabase con cookies + rol de servidor
+    server/                  # Supabase con cookies, rol de servidor y sesión
   middleware.ts              # Renovación de sesión
 supabase/schema.sql          # Tablas, índices y políticas RLS
 ```

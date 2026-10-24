@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ArrowUpRight, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function CheckoutButton({ planId, label = "Elegir plan" }: { planId: string; label?: string }) {
+export default function CheckoutButton({ amountUsd, label = "Invertir ahora" }: { amountUsd: number; label?: string }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -11,10 +11,10 @@ export default function CheckoutButton({ planId, label = "Elegir plan" }: { plan
     if (pending) return;
     setPending(true); setError("");
     try {
-      const response = await fetch("/api/checkout", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ planId }) });
+      const response = await fetch("/api/checkout", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ amountUsd }) });
       const data = await response.json();
-      if (data.demo) { router.push("/dashboard?demo=1"); return; }
-      if (response.status === 401) { router.push(`/acceso?plan=${encodeURIComponent(planId)}`); return; }
+      if (data.demo) { router.push("/acceso"); return; }
+      if (response.status === 401) { router.push("/acceso?next=%2F%23planes"); return; }
       if (!response.ok || !data.url) throw new Error(data.error || "No pudimos iniciar el pago.");
       window.location.assign(data.url);
     } catch (e) { setError(e instanceof Error ? e.message : "Ocurrió un error."); }
