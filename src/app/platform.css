@@ -4,25 +4,9 @@
 .auth-role-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:7px;background:transparent;color:#9aaba9;padding:11px 10px;font-size:13px;font-weight:800}
 .auth-role-tabs button.active{background:var(--mint);color:#142016}
 .auth-form form .auth-input-shell+label{margin-top:18px}
-.auth-switch{display:block;margin:18px auto 0;border:0;background:none;color:#a9bab4;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.auth-switch{display:block;margin:0;border:0;background:none;color:#a9bab4;font-size:12px;text-decoration:underline;text-underline-offset:3px}
 .auth-switch:hover{color:var(--mint)}
-.auth-quick{border:1px solid #ffd34f55;background:linear-gradient(135deg,#ffd34f14,#2469f614);border-radius:14px;padding:18px;margin:0 0 6px}
-.auth-quick-head{display:flex;align-items:center;gap:8px;color:var(--mint);font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-bottom:14px}
-.auth-quick>p{font-size:12px;color:#a9b6e0;margin:12px 0 0}
-.auth-quick-buttons{display:grid;gap:10px}
-.auth-quick-buttons form{margin:0}
-.auth-quick-buttons button{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:14px 16px;border-radius:11px;border:1px solid transparent;font-size:14px;transition:transform .2s,box-shadow .2s}
-.auth-quick-buttons button>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:3px}
-.auth-quick-buttons strong{font-size:15px}
-.auth-quick-buttons small{font-size:12px;opacity:.8}
-.auth-quick-icon{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
-.auth-quick-buttons button.user{background:linear-gradient(135deg,#ffe072,#ffd34f);color:#0e173e}
-.auth-quick-buttons button.user .auth-quick-icon{background:#0e173e1a}
-.auth-quick-buttons button.admin{background:linear-gradient(135deg,#2469f6,#1748c4);color:#fff;border-color:#ffffff26}
-.auth-quick-buttons button.admin .auth-quick-icon{background:#ffffff1f}
-.auth-quick-buttons button:hover{transform:translateY(-2px);box-shadow:0 12px 26px #0006}
-.auth-divider{display:flex;align-items:center;gap:12px;color:#a9b6e0;font-size:11px;letter-spacing:.6px;text-transform:uppercase;margin:26px 0}
-.auth-divider:before,.auth-divider:after{content:"";flex:1;height:1px;background:#ffffff1f}
+
 
 .dash-mobile-signout{display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:inherit;font-size:12px;font-weight:700}
 .gain-value{color:var(--mint)}
@@ -188,12 +172,6 @@
 .auth-role-tabs button{color:#4a5578}
 .auth-role-tabs button.active{background:#fff;color:#1748c4;box-shadow:0 1px 4px #0a14461f}
 .auth-switch{color:#4a5578}
-.auth-quick{background:#f8faff;border-color:#dfe4ef}
-.auth-quick-head{color:#1748c4}
-.auth-quick>p,.auth-divider{color:#65708b}
-.auth-divider:before,.auth-divider:after{background:#e5e8f0}
-.auth-quick-buttons button.user{box-shadow:0 6px 16px #ffb72b33}
-.auth-quick-buttons button:hover{box-shadow:0 12px 26px #0a144626}
 
 /* Rendimiento del scroll: se pinta solo lo visible y las animaciones van en su propia capa */
 .bm-halo-ring,.bm-orbit-energy,.bm-float-glass{will-change:transform}
@@ -205,3 +183,55 @@
 .pulse-dot:after{content:"";position:absolute;inset:-4px;border-radius:50%;background:rgba(38,189,133,.3);animation:bm-pulse-ring 2s ease-out infinite}
 @keyframes bm-pulse-ring{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.6);opacity:0}}
 @media(prefers-reduced-motion:reduce){.pulse-dot:after{animation:none}}
+
+/* Enlaces del login, aviso de configuración y animación de carga */
+.auth-links{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:20px}
+.auth-config-warning{display:flex;gap:10px;align-items:flex-start;border:1px solid #f5d77a;background:#fff8e1;color:#5c4400;border-radius:9px;padding:12px 14px;font-size:12px;line-height:1.6;margin-bottom:22px}
+.auth-config-warning svg{flex-shrink:0;color:#d99a00;margin-top:2px}
+.auth-config-warning code{font-size:11px;background:#fff;padding:1px 4px;border-radius:4px}
+.spin{animation:jh-spin 1s linear infinite}
+@keyframes jh-spin{to{transform:rotate(360deg)}}
+
+/* Flujo de inversión (/invertir) */
+.invest-page{min-height:100vh;background:#f5f7fc;color:#131a35;font-family:var(--font-body)}
+.invest-header{display:flex;justify-content:space-between;align-items:center;padding:18px max(16px,calc(50% - 560px));background:#fff;border-bottom:1px solid #e5e8f0}
+.invest-header .brand-mark{background:linear-gradient(135deg,#ffd34f,#ffb72b);color:#070e46;transform:none}
+.invest-header .brand-mark i{background:#070e46}
+.invest-header .brand-word{color:#070e46}.invest-header .brand-word span{color:#65708b}
+.invest-header>a{display:inline-flex;align-items:center;gap:6px;color:#1748c4;font-weight:700;font-size:14px}
+.invest-main-wrap{display:flex;justify-content:center;padding:40px 16px 70px}
+.invest-card{width:min(560px,100%);background:#fff;border:1px solid #e5e8f0;border-radius:18px;padding:32px;box-shadow:0 1px 2px #0a14460a,0 18px 40px #0a14460f}
+.invest-back{display:inline-flex;align-items:center;gap:6px;color:#65708b;font-size:13px;margin-bottom:22px}
+.invest-eyebrow{display:block;color:#1748c4;font-size:11px;font-weight:800;letter-spacing:1.6px}
+.invest-card h1{font:400 clamp(24px,4vw,32px) var(--font-title);letter-spacing:.03em;text-transform:uppercase;color:#070e46;margin:10px 0 8px}
+.invest-lead{color:#65708b;margin:0 0 24px;font-size:15px}
+.invest-card>label,.invest-card form>label{display:block;font-size:13px;font-weight:800;color:#24315f;margin-bottom:10px}
+.invest-amount{display:flex;align-items:center;gap:8px;border:2px solid #cfd6e6;border-radius:12px;padding:0 16px;background:#fff}
+.invest-amount:focus-within{border-color:#1748c4}
+.invest-amount span{color:#65708b;font-weight:800;font-size:18px}
+.invest-amount input{flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:32px;font-weight:800;color:#070e46;padding:12px 0}
+.invest-presets{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 22px}
+.invest-presets button{border:1px solid #dfe4ef;background:#fff;color:#4a5578;border-radius:20px;padding:7px 14px;font-weight:700;font-size:13px}
+.invest-presets button.active{border-color:#1748c4;background:#eaf0ff;color:#1748c4}
+.invest-summary{margin:0 0 16px;border:1px solid #e5e8f0;border-radius:12px;overflow:hidden}
+.invest-summary>div{display:flex;justify-content:space-between;gap:14px;padding:12px 16px;font-size:14px;border-bottom:1px solid #eef1f7}
+.invest-summary>div:last-child{border-bottom:0}
+.invest-summary dt{display:flex;align-items:center;gap:7px;color:#65708b}
+.invest-summary dt svg{color:#1748c4}
+.invest-summary dd{margin:0;font-weight:700;color:#070e46;text-align:right;word-break:break-all}
+.invest-note{color:#65708b;font-size:12px;line-height:1.6;margin:0 0 16px}
+.invest-check{display:flex!important;gap:10px;align-items:flex-start;font-weight:600!important;font-size:13px!important;color:#24315f;margin-bottom:16px!important;cursor:pointer}
+.invest-check input{width:18px;height:18px;margin:1px 0 0;accent-color:#1748c4}
+.invest-check a{color:#1748c4;text-decoration:underline}
+.invest-test{display:flex;align-items:center;gap:8px;background:#fff8e1;border:1px solid #f5d77a;color:#5c4400;border-radius:9px;padding:10px 12px;font-size:12px;margin:0 0 16px}
+.invest-pay{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:10px;padding:17px;background:linear-gradient(135deg,#ffe072,#ffd34f);color:#070e46;font-weight:800;font-size:16px;cursor:pointer}
+.invest-pay:disabled{opacity:.55;cursor:not-allowed}
+.invest-error{color:#c8372d;font-size:13px;margin:10px 0 0}
+.invest-success{text-align:center}
+.invest-success-icon{width:76px;height:76px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:#e3f8ee;color:#0a8a55}
+.invest-success p{color:#4a5578;line-height:1.7}
+.invest-success .invest-summary{text-align:left;margin-top:20px}
+
+/* Botón «Invertir este monto» de la calculadora */
+.bm-calc-output .choose-plan{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:28px;padding:16px 18px;border-radius:8px;border:0;background:linear-gradient(135deg,#ffe072,#ffd34f);color:#070e46;font-weight:800;font-size:15px;transition:transform .2s}
+.bm-calc-output .choose-plan:hover{transform:translateY(-2px);color:#070e46}

@@ -3,11 +3,11 @@ import Stripe from "stripe";
 import { planForAmount } from "@/lib/plans";
 import { MIN_INVESTMENT_USD } from "@/lib/rates";
 import { getSupabaseAdmin } from "@/lib/server/admin";
-import { paymentsApproved, isDemoMode } from "@/lib/config";
+import { paymentMode, paymentsApproved } from "@/lib/config";
 
 export const runtime="nodejs";
 export async function POST(request:Request){
-  if(isDemoMode||!paymentsApproved)return NextResponse.json({error:"Procesamiento deshabilitado."},{status:503});
+  if(paymentMode!=="stripe"||!paymentsApproved)return NextResponse.json({error:"Procesamiento deshabilitado."},{status:503});
   const key=process.env.STRIPE_SECRET_KEY;
   const secret=process.env.STRIPE_WEBHOOK_SECRET;
   const signature=request.headers.get("stripe-signature");
@@ -32,7 +32,7 @@ export async function POST(request:Request){
     const {error}=await admin.from("investments").insert({
       user_id:userId,plan_id:plan.id,principal_usd:amount,
       started_at:now.toISOString(),ends_at:ends.toISOString(),
-      stripe_session_id:session.id,status:"active",
+      payment_method:"stripe",payment_reference:session.id,status:"active",
     });
     if(error&&error.code!=="23505")throw error;
     return NextResponse.json({received:true});

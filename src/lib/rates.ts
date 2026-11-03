@@ -4,6 +4,7 @@
 export const DEFAULT_DAILY_RATE_PCT = 1.5;
 export const MIN_TERM_DAYS = 30;
 export const MIN_INVESTMENT_USD = 50;
+export const MAX_INVESTMENT_USD = 100_000;
 export const MAX_DAILY_RATE_PCT = 100;
 export const RATES_TIMEZONE = "America/Bogota";
 

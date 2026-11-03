@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/server/admin";
-import { DEMO_CLAIMS_COOKIE, demoCookieOptions, getDemoClaims, getSession } from "@/lib/server/session";
+import { getSession } from "@/lib/server/session";
 
 export const runtime="nodejs";
 function sameOrigin(request:Request){const origin=request.headers.get("origin");if(!origin)return true;try{return new URL(origin).host===request.headers.get("host");}catch{return false;}}
@@ -15,18 +15,8 @@ export async function POST(request:Request){
   let body:unknown;
   try{body=await request.json()}catch{return NextResponse.json({error:"Solicitud inválida."},{status:400});}
   const {investmentId,status}=(body&&typeof body==="object"?body:{}) as {investmentId?:unknown;status?:unknown};
-  if(typeof investmentId!=="string"||investmentId.length>64)return NextResponse.json({error:"Identificador inválido."},{status:400});
+  if(typeof investmentId!=="string"||!/^[0-9a-f-]{36}$/i.test(investmentId))return NextResponse.json({error:"Identificador inválido."},{status:400});
   if(status!=="approved"&&status!=="settled"&&status!=="rejected")return NextResponse.json({error:"Estado inválido."},{status:400});
-
-  if(session.kind==="demo"){
-    const claims=await getDemoClaims();
-    const claim=claims[investmentId];
-    if(!claim)return NextResponse.json({error:"Solicitud no encontrada."},{status:404});
-    if(claim.status==="settled")return NextResponse.json({error:"Este retiro ya fue desembolsado."},{status:409});
-    const response=NextResponse.json({message:MESSAGES[status]});
-    response.cookies.set(DEMO_CLAIMS_COOKIE,JSON.stringify({...claims,[investmentId]:{...claim,status}}),demoCookieOptions(30));
-    return response;
-  }
 
   try{
     const admin=getSupabaseAdmin();

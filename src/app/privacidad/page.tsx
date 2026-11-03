@@ -1,5 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Logo from "@/components/logo";
-export const metadata:Metadata={title:"Información de privacidad"};
-export default function Privacy(){return <div className="simple-page"><header className="simple-header"><Logo/><Link href="/">Volver al inicio</Link></header><main className="simple-content"><h1>Privacidad</h1><p>Documento preliminar para el prototipo JH Inversiones. Antes de su lanzamiento deberá completarse y aprobarse una política de tratamiento de datos personales que cumpla la legislación aplicable.</p><h2>Datos previstos</h2><p>Cuando se active el acceso real, el sistema podrá procesar correo electrónico, identificadores de sesión, operaciones confirmadas por el proveedor de pagos y solicitudes administrativas. En modo demostración no se registra ninguna transacción financiera.</p><h2>Servicios externos</h2><p>El proyecto está preparado para utilizar Supabase (identidad y datos), un procesador de pagos aprobado, Resend (correos transaccionales) y Vercel (alojamiento). Debe revisarse cada proveedor antes de tratar datos personales reales.</p><h2>Derechos y contacto</h2><p>La versión definitiva deberá indicar el responsable del tratamiento, finalidad, bases legales, conservación, transferencias, mecanismos para ejercer derechos y un canal de contacto verificado.</p></main></div>}
+import ContactLine from "@/components/contact-line";
+import { brand } from "@/lib/brand";
+
+export const metadata:Metadata={title:"Política de privacidad"};
+export default function Privacy(){return <div className="simple-page"><header className="simple-header"><Logo/><Link href="/">Volver al inicio</Link></header><main className="simple-content">
+  <h1>Política de privacidad</h1>
+  <p>Esta política explica qué datos trata {brand.name} y para qué.</p>
+  <h2>Datos que tratamos</h2>
+  <p>Tu correo electrónico y contraseña (cifrada) para darte acceso; los montos, fechas y estados de tus inversiones; tus solicitudes de retiro, y los datos técnicos de sesión necesarios para mantenerte conectado.</p>
+  <h2>Para qué los usamos</h2>
+  <p>Para gestionar tu cuenta, registrar tus inversiones, calcular tus ganancias diarias, tramitar tus retiros y comunicarnos contigo sobre ellos. No vendemos tus datos.</p>
+  <h2>Proveedores</h2>
+  <p>Usamos Supabase (autenticación y base de datos) y Vercel (alojamiento). Si se habilitan, también Resend (correos de aviso) y el procesador de pagos correspondiente.</p>
+  <h2>Conservación y seguridad</h2>
+  <p>Cada cuenta solo puede ver sus propios datos. Conservamos la información mientras tu cuenta esté activa y durante el tiempo que exijan las obligaciones legales y contables.</p>
+  <h2>Tus derechos</h2>
+  <p>Puedes pedir acceso, corrección o eliminación de tus datos escribiéndonos a <ContactLine/>.</p>
+</main></div>}

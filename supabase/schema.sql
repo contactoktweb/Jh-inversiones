@@ -1,7 +1,8 @@
--- Ejecutar en el SQL Editor de Supabase antes de habilitar modo real.
+-- JH Inversiones · esquema de base de datos.
+-- Ejecutar completo en Supabase → SQL Editor → New query → Run (se puede volver a ejecutar sin perder datos).
 create extension if not exists pgcrypto;
 
--- Perfil con rol. Para nombrar un administrador:
+-- Perfil con rol. Para nombrar un administrador también se puede usar ADMIN_EMAILS en las variables de entorno, o:
 --   update public.profiles set role = 'admin' where email = 'admin@tudominio.com';
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -21,6 +22,10 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- Perfiles de cuentas creadas antes de ejecutar este esquema.
+insert into public.profiles (id, email)
+  select id, coalesce(email, '') from auth.users on conflict (id) do nothing;
+
 create table if not exists public.investments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -29,7 +34,9 @@ create table if not exists public.investments (
   started_at timestamptz not null,
   -- Fecha a partir de la cual se puede solicitar el retiro (plazo mínimo de 30 días).
   ends_at timestamptz not null,
-  stripe_session_id text not null unique,
+  -- 'test' = pago de prueba (no se cobró dinero); 'stripe' = pago confirmado por webhook.
+  payment_method text not null default 'test' check (payment_method in ('test','stripe')),
+  payment_reference text not null unique,
   status text not null default 'active' check (status in ('active','closed','cancelled')),
   created_at timestamptz not null default now(),
   constraint minimum_term check (ends_at >= started_at + interval '30 days')
@@ -44,12 +51,13 @@ create table if not exists public.daily_rates (
   updated_at timestamptz not null default now()
 );
 
+-- Solicitudes de retiro (capital + ganancias).
 create table if not exists public.claims (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   investment_id uuid not null unique references public.investments(id) on delete cascade,
   expected_amount_usd numeric(18,2) not null check (expected_amount_usd > 0),
-  status text not null default 'pending' check (status in ('pending','under_review','approved','rejected','settled')),
+  status text not null default 'pending' check (status in ('pending','approved','rejected','settled')),
   email_status text not null default 'pending' check (email_status in ('pending','sent','failed')),
   -- Fecha de la solicitud: las ganancias se congelan en este momento.
   created_at timestamptz not null default now(),
@@ -66,13 +74,17 @@ alter table public.investments enable row level security;
 alter table public.daily_rates enable row level security;
 alter table public.claims enable row level security;
 
--- Usuarios sólo pueden leer sus propios registros. Escrituras: servidor con service role.
+-- Usuarios sólo pueden leer sus propios registros. Todas las escrituras las hace el servidor con la service role key.
+drop policy if exists "profiles_select_own" on public.profiles;
 create policy "profiles_select_own" on public.profiles for select
-  to authenticated using (auth.uid() = id);
+  to authenticated using ((select auth.uid()) = id);
+drop policy if exists "investments_select_own" on public.investments;
 create policy "investments_select_own" on public.investments for select
-  to authenticated using (auth.uid() = user_id);
+  to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "claims_select_own" on public.claims;
 create policy "claims_select_own" on public.claims for select
-  to authenticated using (auth.uid() = user_id);
+  to authenticated using ((select auth.uid()) = user_id);
 -- Las tasas son visibles para cualquier cuenta autenticada (necesarias para calcular ganancias).
+drop policy if exists "daily_rates_select_authenticated" on public.daily_rates;
 create policy "daily_rates_select_authenticated" on public.daily_rates for select
   to authenticated using (true);

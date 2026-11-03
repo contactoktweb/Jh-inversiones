@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/server/admin";
-import { DEMO_RATES_COOKIE, demoCookieOptions, getDemoRates, getSession } from "@/lib/server/session";
+import { getSession } from "@/lib/server/session";
 import { isValidDayKey, isValidRate, todayKey } from "@/lib/rates";
 
 export const runtime="nodejs";
@@ -19,12 +19,6 @@ export async function POST(request:Request){
   if(date>todayKey())return NextResponse.json({error:"Solo puedes configurar el día de hoy o días anteriores."},{status:400});
   if(!isValidRate(ratePct))return NextResponse.json({error:"El porcentaje debe estar entre 0 y 100."},{status:400});
   const rate=Math.round(ratePct*1000)/1000;
-  if(session.kind==="demo"){
-    const rates={...(await getDemoRates()),[date]:rate};
-    const response=NextResponse.json({message:`Tasa del ${date} guardada: ${rate}%.`,date,ratePct:rate});
-    response.cookies.set(DEMO_RATES_COOKIE,JSON.stringify(rates),demoCookieOptions(120));
-    return response;
-  }
   try{
     const {error}=await getSupabaseAdmin().from("daily_rates").upsert({rate_date:date,rate_pct:rate,set_by:session.userId,updated_at:new Date().toISOString()});
     if(error)throw error;

@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getSupabaseServer } from "@/lib/server/supabase";
 import { getSupabaseAdmin } from "@/lib/server/admin";
-import { formatUsd, makeDemoInvestments } from "@/lib/finance";
+import { formatUsd } from "@/lib/finance";
 import { calculateEarnings } from "@/lib/rates";
-import { DEMO_CLAIMS_COOKIE, demoCookieOptions, getDemoClaims, getRates, getSession, withClaims } from "@/lib/server/session";
+import { getRates, getSession } from "@/lib/server/session";
 
 export const runtime="nodejs";
 function escapeHtml(s:string){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]||c));}
@@ -20,21 +20,8 @@ export async function POST(request:Request){
   let body:unknown;
   try{body=await request.json()}catch{return NextResponse.json({error:"Solicitud inválida."},{status:400});}
   const id=(body&&typeof body==="object"&&"investmentId" in body&&(body as {investmentId:unknown}).investmentId);
-  if(typeof id!=="string"||id.length>64)return NextResponse.json({error:"Identificador inválido."},{status:400});
-  const rates=await getRates(session);
-
-  if(session.kind==="demo"){
-    const claims=await getDemoClaims();
-    const position=withClaims(makeDemoInvestments(),claims).find(x=>x.id===id);
-    if(!position)return NextResponse.json({error:"Inversión no encontrada."},{status:404});
-    const calc=calculateEarnings(position,rates);
-    if(!calc.canWithdraw)return NextResponse.json({error:position.claim_status&&position.claim_status!=="rejected"?"Ya tienes una solicitud de retiro para esta inversión.":"Esta inversión todavía no cumple el plazo mínimo de 30 días."},{status:409});
-    const amount=Math.round(calc.total*100)/100;
-    const response=NextResponse.json({message:SUCCESS,amountUsd:amount});
-    response.cookies.set(DEMO_CLAIMS_COOKIE,JSON.stringify({...claims,[id]:{status:"pending",requested_at:new Date().toISOString(),amount_usd:amount}}),demoCookieOptions(30));
-    return response;
-  }
-
+  if(typeof id!=="string")return NextResponse.json({error:"Identificador inválido."},{status:400});
+  const rates=await getRates();
   if(!/^[0-9a-f-]{36}$/i.test(id))return NextResponse.json({error:"Identificador inválido."},{status:400});
   const supabase=await getSupabaseServer();
   if(!supabase)return NextResponse.json({error:"Acceso no disponible."},{status:503});
