@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/server/admin";
 import { getSession } from "@/lib/server/session";
+import { logAudit } from "@/lib/server/audit";
 import { isValidDayKey, isValidRate, todayKey } from "@/lib/rates";
 
 export const runtime="nodejs";
@@ -22,6 +23,7 @@ export async function POST(request:Request){
   try{
     const {error}=await getSupabaseAdmin().from("daily_rates").upsert({rate_date:date,rate_pct:rate,set_by:session.userId,updated_at:new Date().toISOString()});
     if(error)throw error;
+    await logAudit(session,"rate.set","daily_rate",date,{rate_pct:rate});
     return NextResponse.json({message:`Tasa del ${date} guardada: ${rate}%.`,date,ratePct:rate});
   }catch(e){console.error("rate_error",e instanceof Error?e.message:"Error inesperado");return NextResponse.json({error:"No se pudo guardar la tasa."},{status:502});}
 }

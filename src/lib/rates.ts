@@ -36,8 +36,15 @@ export type EarningsPosition = { principal_usd: number; started_at: string; stat
 /** Una solicitud de retiro vigente (no rechazada) congela las ganancias en su fecha. */
 export const hasActiveClaim = (position: EarningsPosition) => Boolean(position.claim_status && position.claim_status !== "rejected");
 
+/** Solo generan ganancias las inversiones con pago confirmado (activas o ya cerradas por retiro). */
+export const isEarning = (position: EarningsPosition) => position.status === "active" || position.status === "closed";
+
 export function calculateEarnings(position: EarningsPosition, rates: DailyRates, now = Date.now()) {
   const started = new Date(position.started_at).getTime();
+  if (!isEarning(position)) {
+    const availableAt = started + MIN_TERM_DAYS * DAY;
+    return { earnings: 0, total: position.principal_usd, daysElapsed: 0, daysRemaining: MIN_TERM_DAYS, availableAt, termProgress: 0, currentRate: rateFor(rates, dayKey(now)), canWithdraw: false };
+  }
   const frozenAt = hasActiveClaim(position) && position.claim_requested_at ? new Date(position.claim_requested_at).getTime() : Infinity;
   const elapsed = Math.max(0, Math.min(now, frozenAt) - started);
   const fullDays = Math.floor(elapsed / DAY);
@@ -64,6 +71,6 @@ export function calculateEarnings(position: EarningsPosition, rates: DailyRates,
 export function earningsSeries(positions: EarningsPosition[], rates: DailyRates, days: number, now = Date.now()) {
   return Array.from({ length: days }, (_, i) => {
     const at = now - (days - 1 - i) * DAY;
-    return { at, value: positions.reduce((sum, p) => sum + (new Date(p.started_at).getTime() <= at ? calculateEarnings(p, rates, at).earnings : 0), 0) };
+    return { at, value: positions.reduce((sum, p) => sum + (isEarning(p) && new Date(p.started_at).getTime() <= at ? calculateEarnings(p, rates, at).earnings : 0), 0) };
   });
 }

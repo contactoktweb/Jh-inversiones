@@ -14,9 +14,9 @@ export default function Terms(){return <div className="simple-page"><header clas
   <h2>2. Ganancias</h2>
   <p>Cada día tu inversión suma el capital multiplicado por el porcentaje de ganancia diaria que publica la administración para ese día. Si no se publica un porcentaje, se aplica el {DEFAULT_DAILY_RATE_PCT}% por defecto. El porcentaje puede variar de un día a otro y <strong>las ganancias no están garantizadas</strong>.</p>
   <h2>3. Plazo mínimo y retiros</h2>
-  <p>Cada inversión tiene un plazo mínimo de {MIN_TERM_DAYS} días. Cumplido ese plazo puedes solicitar desde tu panel el retiro del capital más las ganancias acumuladas. Las ganancias dejan de sumar en la fecha de la solicitud. La administración revisa cada solicitud y realiza el desembolso; el estado (pendiente, aprobado, desembolsado o rechazado) se muestra en tu panel.</p>
-  <h2>4. Pagos de prueba</h2>
-  <p>Mientras la plataforma opere en modo de pago de prueba, los pagos se aceptan sin realizar ningún cobro y las inversiones creadas así quedan marcadas como «pago de prueba».</p>
+  <p>Cada inversión tiene un plazo mínimo de {MIN_TERM_DAYS} días. Cumplido ese plazo puedes solicitar desde tu panel el retiro del capital más las ganancias acumuladas, indicando dónde quieres recibir el dinero. Las ganancias dejan de sumar en la fecha de la solicitud. La administración revisa cada solicitud y realiza el desembolso a los datos que indicaste; el estado (pendiente, aprobado, desembolsado o rechazado), el comprobante del pago o el motivo de un rechazo se muestran en tu panel.</p>
+  <h2>4. Pagos</h2>
+  <p>Si pagas por transferencia bancaria, la inversión queda pendiente hasta que la administración confirme que recibió el monto exacto con tu referencia de pago; las ganancias y el plazo empiezan a contar desde esa confirmación. Si el pago no se recibe, la inversión se cancela y verás el motivo en tu panel. Mientras la plataforma ofrezca el pago de prueba, esos pagos no realizan ningún cobro, quedan marcados como «pago de prueba» y no dan derecho a retiros.</p>
   <h2>5. Cuenta</h2>
   <p>Eres responsable de mantener la confidencialidad de tu contraseña. Podemos suspender cuentas usadas de forma fraudulenta o contraria a estas condiciones.</p>
   <h2>6. Contacto</h2>
