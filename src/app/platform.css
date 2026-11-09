@@ -342,3 +342,10 @@
 .export-row{max-width:none}
 .test-tag{color:#b85600!important;font-weight:700}
 .test-warning{background:#fff8e1;border:1px solid #f5d77a;color:#5c4400;border-radius:8px;padding:8px 10px}
+
+/* Planes (/admin/planes) */
+.plan-flag{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 8px;border-radius:999px;background:#fff5d1;color:#7a5600;font-size:10px;font-weight:800;letter-spacing:.04em;vertical-align:middle}
+.form-grid label.check-line{flex-direction:row;align-items:center;gap:10px;font-weight:700;cursor:pointer}
+.form-grid label.check-line input{width:18px;height:18px;flex:none;accent-color:#1748c4}
+.modal-close.static{position:static}
+.panel-heading .rate-primary{width:auto;margin:0}

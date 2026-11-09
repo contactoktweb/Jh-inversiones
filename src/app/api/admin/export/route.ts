@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { calculateEarnings } from "@/lib/rates";
 import { CLAIM_STATUS_LABELS, INVESTMENT_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/finance";
-import { getPlan } from "@/lib/plans";
 import { loadAdminData, loadAudit } from "@/lib/server/admin-data";
 import { AUDIT_LABELS } from "@/lib/server/audit";
 import { getRates, getSession } from "@/lib/server/session";
@@ -30,7 +29,7 @@ export async function GET(request:Request){
     }else if(type==="retiros"){
       content=csv(["solicitado","cliente","capital USD","total a pagar USD","estado","datos de pago del cliente","comprobante","nota","resuelto"],investments.filter(i=>i.claim_status).map(i=>[i.claim_requested_at,i.owner_email,money(i.principal_usd),money(i.claim_amount_usd??0),CLAIM_STATUS_LABELS[i.claim_status!],i.claim_payout_details,i.claim_payout_reference,i.claim_admin_note,i.claim_resolved_at]));
     }else{
-      content=csv(["creada","cliente","plan","monto USD","método de pago","referencia","estado","inicio","retiro desde","ganancia USD","nota"],investments.map(i=>{const c=calculateEarnings(i,rates,now);return [i.created_at,i.owner_email,getPlan(i.plan_id)?.name||i.plan_id,money(i.principal_usd),PAYMENT_METHOD_LABELS[i.payment_method||""]||i.payment_method,i.payment_reference,INVESTMENT_STATUS_LABELS[i.status]||i.status,i.started_at,new Date(c.availableAt).toISOString(),money(c.earnings),i.admin_note];}));
+      content=csv(["creada","cliente","plan","monto USD","método de pago","referencia","estado","inicio","retiro desde","ganancia USD","nota"],investments.map(i=>{const c=calculateEarnings(i,rates,now);return [i.created_at,i.owner_email,i.plan_name||i.plan_id,money(i.principal_usd),PAYMENT_METHOD_LABELS[i.payment_method||""]||i.payment_method,i.payment_reference,INVESTMENT_STATUS_LABELS[i.status]||i.status,i.started_at,new Date(c.availableAt).toISOString(),money(c.earnings),i.admin_note];}));
     }
   }
   const date=new Date().toISOString().slice(0,10);

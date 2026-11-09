@@ -4,7 +4,8 @@ import Stripe from "stripe";
 import { getSupabaseAdmin } from "./admin";
 import type { Session } from "./session";
 import { formatUsd } from "@/lib/finance";
-import { planForAmount } from "@/lib/plans";
+import { minInvestment, planForAmount } from "@/lib/plans";
+import { getPlans } from "./plans";
 import { MIN_TERM_DAYS } from "@/lib/rates";
 import { paymentsApproved, siteUrl, type PaymentMethod } from "@/lib/config";
 
@@ -34,8 +35,16 @@ export function transferReference() {
   return "JH-" + Array.from(randomBytes(6), b => alphabet[b % alphabet.length]).join("");
 }
 
+/** Plan del monto según los planes vigentes; error si el monto no llega al plan más bajo. */
+export async function resolvePlan(amountUsd: number) {
+  const plans = await getPlans();
+  const plan = planForAmount(plans, amountUsd);
+  if (!plan) throw new PaymentError(`El monto mínimo para invertir es ${formatUsd(minInvestment(plans))}.`, 400);
+  return plan;
+}
+
 export async function startPayment(session: Session, amountUsd: number, method: PaymentMethod): Promise<PaymentResult> {
-  const plan = planForAmount(amountUsd);
+  const plan = await resolvePlan(amountUsd);
   const admin = getSupabaseAdmin();
 
   if (method === "test" || method === "transfer") {
@@ -83,7 +92,7 @@ export async function confirmPayment(investmentId: string, adminId: string) {
 
 /** Inversión registrada a mano por el administrador (pago recibido por fuera de la plataforma). */
 export async function createManualInvestment(userId: string, amountUsd: number, reference: string, startedAt: Date, adminId: string, note: string | null) {
-  const plan = planForAmount(amountUsd);
+  const plan = await resolvePlan(amountUsd);
   const { data, error } = await getSupabaseAdmin().from("investments").insert({
     user_id: userId, plan_id: plan.id, principal_usd: amountUsd, ...termDates(startedAt),
     payment_method: "manual", payment_reference: reference, status: "active",

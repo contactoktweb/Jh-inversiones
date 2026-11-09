@@ -5,7 +5,9 @@ import TransferSettings from "@/components/admin/settings";
 import { contact } from "@/lib/brand";
 import { paymentMethods, paymentsApproved } from "@/lib/config";
 import { PAYMENT_METHOD_LABELS } from "@/lib/finance";
-import { DEFAULT_DAILY_RATE_PCT, MAX_INVESTMENT_USD, MIN_INVESTMENT_USD, MIN_TERM_DAYS } from "@/lib/rates";
+import { DEFAULT_DAILY_RATE_PCT, MAX_INVESTMENT_USD, MIN_TERM_DAYS } from "@/lib/rates";
+import { minInvestment } from "@/lib/plans";
+import { getPlans } from "@/lib/server/plans";
 import { requireAdminPage } from "@/lib/server/admin-page";
 import { emailEnabled } from "@/lib/server/notify";
 import { getSetting } from "@/lib/server/session";
@@ -15,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
   const { session, badges } = await requireAdminPage("/admin/ajustes");
-  const transfer = await getSetting("transfer_instructions");
+  const [transfer, plans] = await Promise.all([getSetting("transfer_instructions"), getPlans()]);
   const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim()).filter(Boolean);
   return <AdminShell email={session.email} badges={badges} eyebrow="AJUSTES" title="Ajustes." subtitle="Datos de pago y configuración actual de la plataforma.">
     <div className="dash-body-grid">
@@ -28,7 +30,7 @@ export default async function AdminSettingsPage() {
           <li><span>Correo que recibe los avisos</span><strong>{process.env.ADMIN_NOTIFICATION_EMAIL || "—"}</strong></li>
           <li><span>Administradores principales</span><strong>{adminEmails.join(", ") || "—"}</strong></li>
           <li><span>Contacto público</span><strong>{[contact.email, contact.whatsappLabel].filter(Boolean).join(" · ") || "—"}</strong></li>
-          <li><span>Inversión mínima / máxima</span><strong>${MIN_INVESTMENT_USD} / ${MAX_INVESTMENT_USD.toLocaleString("en-US")} USD</strong></li>
+          <li><span>Inversión mínima (según Planes) / máxima</span><strong>${minInvestment(plans)} / ${MAX_INVESTMENT_USD.toLocaleString("en-US")} USD</strong></li>
           <li><span>Plazo mínimo</span><strong>{MIN_TERM_DAYS} días</strong></li>
           <li><span>Tasa diaria por defecto</span><strong>{DEFAULT_DAILY_RATE_PCT}%</strong></li>
         </ul>

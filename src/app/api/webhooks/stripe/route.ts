@@ -1,8 +1,8 @@
 // FASE PENDIENTE (pasarela de pago): webhook de ejemplo para Stripe. Ver docs/pasarela-de-pagos.md.
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { planForAmount } from "@/lib/plans";
-import { MIN_INVESTMENT_USD } from "@/lib/rates";
+import { MIN_INVESTMENT_USD, MIN_TERM_DAYS } from "@/lib/rates";
+import { getPlans } from "@/lib/server/plans";
 import { getSupabaseAdmin } from "@/lib/server/admin";
 import { paymentMethods, paymentsApproved } from "@/lib/config";
 
@@ -21,13 +21,14 @@ export async function POST(request:Request){
   if(session.mode!=="payment"||session.payment_status!=="paid")return NextResponse.json({received:true});
   const userId=session.client_reference_id;
   const amount=Number(session.metadata?.amount_usd);
-  const plan=Number.isInteger(amount)&&amount>=MIN_INVESTMENT_USD?planForAmount(amount):undefined;
-  if(!userId||!plan||plan.id!==session.metadata?.plan_id||session.currency!=="usd"||session.amount_total!==amount*100){
+  // El plan se fijó al crear el pago (metadata); se acepta aunque luego se haya ocultado.
+  const plan=Number.isInteger(amount)&&amount>=MIN_INVESTMENT_USD?(await getPlans()).find(p=>p.id===session.metadata?.plan_id):undefined;
+  if(!userId||!plan||session.currency!=="usd"||session.amount_total!==amount*100){
     console.error("webhook_unexpected_session",session.id);
     return NextResponse.json({error:"Datos de pago no corresponden al plan."},{status:400});
   }
   const now=new Date();
-  const ends=new Date(now.getTime()+plan.durationDays*86_400_000);
+  const ends=new Date(now.getTime()+MIN_TERM_DAYS*86_400_000);
   try{
     const admin=getSupabaseAdmin();
     const {error}=await admin.from("investments").insert({

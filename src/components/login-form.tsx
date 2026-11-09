@@ -58,7 +58,7 @@ function InnerForm() {
   }
 
   const title=mode==="forgot"?"Recupera tu acceso.":signup?"Crea tu cuenta.":role==="admin"?"Panel de administración.":"Bienvenido de nuevo.";
-  return <div className="auth-layout"><aside className="auth-left"><Logo/><div className="auth-quote"><span className="auth-tag">INVIERTE DESDE 50 USD</span><h1>Tu espacio.<br/>Tu visión.<br/><span>Tu movimiento.</span></h1><p>Consulta tu inversión, tus ganancias diarias y el plazo mínimo de un mes desde un solo lugar.</p></div><div className="auth-left-footer">JH INVERSIONES / TU PRÓXIMO PASO</div></aside>
+  return <div className="auth-layout"><aside className="auth-left"><Logo/><div className="auth-quote"><span className="auth-tag">INVIERTE EN DÓLARES</span><h1>Tu espacio.<br/>Tu visión.<br/><span>Tu movimiento.</span></h1><p>Consulta tu inversión, tus ganancias diarias y el plazo mínimo de un mes desde un solo lugar.</p></div><div className="auth-left-footer">JH INVERSIONES / TU PRÓXIMO PASO</div></aside>
   <main className="auth-right"><div className="auth-form"><Link className="auth-back" href="/"><ArrowLeft size={16}/> Volver al inicio</Link>
     {!hasSupabaseConfig&&<div className="auth-config-warning" role="alert"><TriangleAlert size={18}/><span>Falta configurar Supabase: agrega <code>NEXT_PUBLIC_SUPABASE_URL</code> y <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> en las variables de entorno.</span></div>}
     {mode!=="forgot"&&<div className="auth-role-tabs" role="tablist" aria-label="Tipo de cuenta">

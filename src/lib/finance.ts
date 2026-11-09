@@ -9,6 +9,8 @@ export const formatUsd = (value: number) =>
 export type Investment = {
   id: string;
   plan_id: string;
+  /** Nombre del plan (de la tabla plans). */
+  plan_name?: string;
   principal_usd: number;
   started_at: string;
   ends_at: string;

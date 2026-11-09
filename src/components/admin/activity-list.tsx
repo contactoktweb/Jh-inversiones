@@ -7,6 +7,7 @@ const LABELS: Record<string, string> = {
   "claim.approved": "Aprobó un retiro", "claim.settled": "Marcó un retiro como desembolsado", "claim.rejected": "Rechazó un retiro",
   "user.suspend": "Suspendió una cuenta", "user.activate": "Reactivó una cuenta", "user.make_admin": "Dio rol de administrador",
   "user.remove_admin": "Quitó rol de administrador", "settings.update": "Actualizó los ajustes",
+  "plan.create": "Creó un plan", "plan.update": "Editó un plan", "plan.hide": "Ocultó un plan", "plan.show": "Volvió a mostrar un plan", "plan.delete": "Eliminó un plan",
 };
 export const auditLabel = (action: string) => LABELS[action] || action;
 
@@ -15,6 +16,7 @@ export function auditSummary(entry: AuditEntry) {
   const d = entry.details || {};
   const parts: string[] = [];
   if (entry.action === "rate.set") parts.push(`${entry.entity_id}: ${d.rate_pct}%`);
+  if (entry.entity === "plan" && typeof d.name === "string") parts.push(typeof d.min_usd === "number" ? `${d.name} · desde ${formatUsd(d.min_usd)}` : d.name);
   if (typeof d.client === "string") parts.push(d.client);
   if (typeof d.email === "string") parts.push(d.email);
   if (typeof d.amount_usd === "number") parts.push(formatUsd(d.amount_usd));

@@ -26,6 +26,27 @@ Resend envía **todos** los correos: los de cuenta (confirmación y recuperació
 3. **API Keys → Create API Key**, con permiso *Sending access*. Copia la clave (`re_…`): se usa dos veces, en Supabase (SMTP) y en Vercel.
 4. Define el remitente, por ejemplo `avisos@jhinversiones.com` (debe pertenecer al dominio verificado).
 
+### 1.1 Sin dominio todavía (modo de prueba)
+
+Si aún no tienes un dominio verificado, puedes arrancar solo con la API key usando el remitente de pruebas de Resend, `onboarding@resend.dev`.
+
+**Limitación de Resend:** con ese remitente Resend **solo entrega correos al email con el que se creó la cuenta de Resend**. A cualquier otro destinatario lo rechaza. La plataforma no se rompe por eso: el correo simplemente no sale y la operación (pago, retiro, etc.) se completa igual.
+
+| Correo | ¿Llega en modo de prueba? |
+|---|---|
+| Avisos al administrador (nueva transferencia, nuevo retiro) | **Sí**, si `ADMIN_NOTIFICATION_EMAIL` es el email de tu cuenta de Resend |
+| Avisos al cliente (pago confirmado, retiro desembolsado…) | No (salvo que el cliente sea ese mismo email) |
+| Confirmación de registro y recuperación de contraseña (Supabase) | Solo para el email de tu cuenta de Resend |
+
+Configuración en modo de prueba:
+
+- **Vercel:** `RESEND_FROM_EMAIL="JH Inversiones <onboarding@resend.dev>"` (ya viene así en `deploy/variables-vercel.env`) y `ADMIN_NOTIFICATION_EMAIL=` el email de tu cuenta de Resend.
+- **Supabase → SMTP** (sección 2.3): igual, pero con *Sender email* `onboarding@resend.dev`.
+- **Supabase → Sign In / Providers → Email:** **desactiva *Confirm email*** mientras no haya dominio. Así los clientes se registran y entran directo sin esperar un correo que no les va a llegar. (Con *Confirm email* desactivado la cuenta queda confirmada al registrarse, así que `ADMIN_EMAILS` funciona igual.)
+- *¿Olvidaste tu contraseña?* solo funcionará para el email de tu cuenta de Resend. Si un cliente la olvida, en Supabase → **Authentication → Users** → el usuario → **Send password recovery** tampoco le llegará: elimina el usuario y que se registre de nuevo, o espera a tener el dominio.
+
+**Cuando tengas el dominio:** verifícalo en Resend (paso 2), cambia `RESEND_FROM_EMAIL` en Vercel a `JH Inversiones <avisos@TU-DOMINIO.com>` y vuelve a desplegar, cambia el *Sender email* del SMTP en Supabase y vuelve a activar *Confirm email*. No hay que tocar el código.
+
 ---
 
 ## 2. Supabase
@@ -34,9 +55,9 @@ Resend envía **todos** los correos: los de cuenta (confirmación y recuperació
 
 1. Crea un proyecto en [supabase.com/dashboard](https://supabase.com/dashboard). Elige una región cercana a los clientes, por ejemplo *South America (São Paulo)* o *East US*.
 2. **SQL Editor → New query** → pega **todo** `supabase/schema.sql` → **Run**. Debe terminar con *Success. No rows returned*.
-   - Crea: `profiles`, `investments`, `daily_rates`, `claims`, `settings` y `admin_audit`, con sus restricciones e índices, la RLS y el disparador que crea el perfil al registrarse.
+   - Crea: `profiles`, `plans`, `investments`, `daily_rates`, `claims`, `settings` y `admin_audit`, con sus restricciones e índices, la RLS y el disparador que crea el perfil al registrarse. Deja cargados los 3 planes iniciales (Impulso 50, Órbita 500, Horizonte 2.000 USD), que luego el administrador edita en **Planes**.
    - Es re-ejecutable: si más adelante hay una versión nueva, se vuelve a pegar y ejecutar sin perder datos.
-3. Comprueba en **Table Editor** que aparecen las 6 tablas.
+3. Comprueba en **Table Editor** que aparecen las 7 tablas.
 
 ### 2.2 Claves (para Vercel)
 
@@ -105,8 +126,8 @@ En **Database → Backups** revisa la política de respaldos del plan contratado
 | `ADMIN_EMAILS` | Sí | Correo(s) del cliente administrador, separados por comas |
 | `NEXT_PUBLIC_PAYMENT_METHODS` | Sí | `test,transfer` para la entrega y las pruebas; `transfer` para operar con dinero real |
 | `RESEND_API_KEY` | Sí | `re_…` |
-| `RESEND_FROM_EMAIL` | Sí | `JH Inversiones <avisos@TU-DOMINIO.com>` (si la escribes a mano en el campo de Vercel, sin comillas) |
-| `ADMIN_NOTIFICATION_EMAIL` | Sí | Bandeja que recibe los avisos de pagos y retiros |
+| `RESEND_FROM_EMAIL` | Sí | `JH Inversiones <avisos@TU-DOMINIO.com>`; sin dominio: `JH Inversiones <onboarding@resend.dev>` (sección 1.1). Si la escribes a mano en el campo de Vercel, sin comillas |
+| `ADMIN_NOTIFICATION_EMAIL` | Sí | Bandeja que recibe los avisos de pagos y retiros (sin dominio: el email de tu cuenta de Resend) |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Recomendada | Correo de contacto público |
 | `NEXT_PUBLIC_CONTACT_WHATSAPP` | Opcional | Solo dígitos con código de país (`573001234567`) |
 | `PAYMENTS_APPROVED`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | No | Pasarela, fase pendiente: dejar `false` y vacías |
@@ -134,6 +155,7 @@ Hazla en el dominio final, de principio a fin:
 - [ ] **Registro** con un correo de prueba → llega «Confirma tu cuenta» desde `avisos@…` → el enlace lleva al panel.
 - [ ] **¿Olvidaste tu contraseña?** → llega el correo → permite crear una nueva.
 - [ ] Registro con el correo de `ADMIN_EMAILS` → al entrar va a **/admin** y aparece la ventana de la tasa diaria.
+- [ ] **Planes:** aparecen Impulso, Órbita y Horizonte; edita uno y comprueba el cambio en la página de inicio.
 - [ ] **Ajustes:** escribe los datos bancarios reales del cliente. «Correos de aviso» debe decir **Activos**.
 - [ ] Como cliente de prueba: invertir **por transferencia** → aparece la referencia `JH-…` con los datos bancarios → al administrador le llega «Nueva inversión pendiente de pago».
 - [ ] En **Pagos**, confirmar esa transferencia → al cliente le llega «Pago confirmado» y su panel la muestra activa.
@@ -178,6 +200,6 @@ delete from admin_audit;  -- opcional: vacía el registro de actividad de las pr
 ## 8. Verificación técnica realizada
 
 - `pnpm typecheck`: sin errores.
-- `pnpm test`: 20 pruebas unitarias.
-- `pnpm test:e2e`: **29 pruebas de punta a punta** contra Supabase local, con las claves nuevas `sb_publishable_` / `sb_secret_`, incluido el envío de cada correo por la API de Resend (simulada).
-- El SQL se probó en una base nueva, re-ejecutándolo, y actualizando una base con la versión anterior y datos.
+- `pnpm test`: 21 pruebas unitarias.
+- `pnpm test:e2e`: **36 pruebas de punta a punta** contra Supabase local, con las claves nuevas `sb_publishable_` / `sb_secret_`, incluido el envío de cada correo por la API de Resend (simulada).
+- El SQL se probó en una base nueva, re-ejecutándolo, y actualizando una base con la versión anterior y datos (incluida la versión sin tabla de planes: las inversiones existentes quedan enlazadas a sus planes).

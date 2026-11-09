@@ -37,11 +37,37 @@ create trigger on_auth_user_created after insert on auth.users
 insert into public.profiles (id, email)
   select id, coalesce(email, '') from auth.users on conflict (id) do nothing;
 
+-- ───────────────────────── Planes ─────────────────────────
+-- Editables desde /admin/planes. A cada inversión le corresponde el plan activo de mayor
+-- «monto desde» que el monto alcanza. Los planes con inversiones no se borran: se ocultan.
+create table if not exists public.plans (
+  id text primary key check (id ~ '^[a-z0-9-]{2,40}$'),
+  name text not null check (char_length(name) between 1 and 40),
+  eyebrow text not null default '' check (char_length(eyebrow) <= 40),
+  caption text not null default '' check (char_length(caption) <= 160),
+  min_usd integer not null check (min_usd >= 50 and min_usd <= 100000),
+  features text[] not null default '{}',
+  highlighted boolean not null default false,
+  active boolean not null default true,
+  sort_order integer not null default 0,
+  updated_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+insert into public.plans (id, name, eyebrow, caption, min_usd, features, highlighted, sort_order) values
+  ('inicio', 'Impulso', 'Para empezar', 'Tu primer paso, desde 50 dólares.', 50,
+    array['Panel de seguimiento','Ganancia diaria visible','Retiro desde el primer mes'], false, 1),
+  ('evolucion', 'Órbita', 'Más elegido', 'Para crecer con más capital.', 500,
+    array['Todo lo del plan Impulso','Gráficos de evolución','Alertas de estado'], true, 2),
+  ('vision', 'Horizonte', 'Largo plazo', 'Pensado para mirar más lejos.', 2000,
+    array['Todo lo del plan Órbita','Visión del periodo completo','Historial de solicitudes'], false, 3)
+  on conflict (id) do nothing;
+
 -- ───────────────────────── Inversiones ─────────────────────────
 create table if not exists public.investments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  plan_id text not null check (plan_id in ('inicio','evolucion','vision')),
+  plan_id text not null references public.plans(id) on update cascade on delete restrict,
   principal_usd numeric(14,2) not null check (principal_usd >= 50),
   -- Inicio del cómputo de ganancias (fecha de confirmación del pago).
   started_at timestamptz not null,
@@ -66,6 +92,14 @@ alter table public.investments add column if not exists confirmed_at timestamptz
 alter table public.investments add column if not exists confirmed_by uuid references auth.users(id) on delete set null;
 alter table public.investments add column if not exists cancelled_at timestamptz;
 alter table public.investments add column if not exists admin_note text;
+-- Versiones anteriores limitaban plan_id a 3 valores fijos; ahora apunta a la tabla de planes.
+alter table public.investments drop constraint if exists investments_plan_id_check;
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'investments_plan_id_fkey') then
+    alter table public.investments add constraint investments_plan_id_fkey
+      foreign key (plan_id) references public.plans(id) on update cascade on delete restrict;
+  end if;
+end $$;
 
 -- ───────────────────────── Tasas diarias ─────────────────────────
 -- Días sin registro usan la tasa por defecto (1.5 %, ver src/lib/rates.ts).
@@ -136,6 +170,7 @@ alter table public.daily_rates enable row level security;
 alter table public.claims enable row level security;
 alter table public.settings enable row level security;
 alter table public.admin_audit enable row level security;
+alter table public.plans enable row level security;
 
 drop policy if exists "profiles_select_own" on public.profiles;
 create policy "profiles_select_own" on public.profiles for select
@@ -152,4 +187,8 @@ create policy "daily_rates_select_authenticated" on public.daily_rates for selec
 drop policy if exists "settings_select_authenticated" on public.settings;
 create policy "settings_select_authenticated" on public.settings for select
   to authenticated using (true);
+-- Planes: públicos (la página de inicio los muestra sin iniciar sesión).
+drop policy if exists "plans_select_all" on public.plans;
+create policy "plans_select_all" on public.plans for select
+  to anon, authenticated using (true);
 -- admin_audit: sin políticas → solo accesible con la service role key.

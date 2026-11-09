@@ -19,19 +19,21 @@ Cómo administrar la plataforma día a día: qué revisar cada día y cómo usar
 **El recorrido de un cliente:**
 
 1. Se **registra** con su correo y lo confirma desde el enlace que recibe.
-2. Elige un **monto** (desde 50 USD) y un **método de pago**.
+2. Elige un **monto** (desde el mínimo, 50 USD al empezar) y un **método de pago**.
 3. Cuando el pago queda confirmado, su inversión pasa a **activa** y suma ganancias cada día.
 4. Cada día tú **fijas el porcentaje** de ganancia (o se aplica 1.5 %).
 5. Al cumplir **30 días** puede **solicitar el retiro** e indicar dónde quiere recibir el dinero.
 6. Tú **haces el pago** por tu banco o billetera y lo **marcas como desembolsado** con el número de comprobante.
 
-**Planes** (se asignan solos según el monto):
+**Planes** (se asignan solos según el monto; tú los puedes cambiar en **Planes**, sección 10):
 
 | Plan | Desde |
 |---|---|
 | Impulso | 50 USD |
 | Órbita | 500 USD |
 | Horizonte | 2,000 USD |
+
+Estos son los planes con los que arranca la plataforma.
 
 ---
 
@@ -40,7 +42,7 @@ Cómo administrar la plataforma día a día: qué revisar cada día y cómo usar
 Antes de recibir a tus primeros clientes:
 
 1. **Entra al panel** con tu correo de administrador (sección 3).
-2. Ve a **Ajustes** y escribe los **datos de tu cuenta bancaria**. Es lo que verán los clientes que paguen por transferencia (sección 11).
+2. Ve a **Ajustes** y escribe los **datos de tu cuenta bancaria**. Es lo que verán los clientes que paguen por transferencia (sección 12).
 3. **Fija la ganancia del día** en la ventana que aparece al entrar (sección 5).
 4. Si quieres, haz una inversión de prueba con otra cuenta para ver el recorrido completo como cliente.
 
@@ -194,7 +196,52 @@ Todas las inversiones, con filtros por estado (*Activas*, *Pago pendiente*, *Cer
 
 ---
 
-## 10. Clientes
+## 10. Planes
+
+![Planes](manual/img/14-planes.png)
+
+Aquí decides **qué planes ves y ofreces** en la página de inicio. Los cambios se publican al instante.
+
+- La tabla muestra cada plan con su **orden**, su **monto desde**, sus beneficios, cuántas **inversiones** tiene y si está **visible** u **oculto**.
+- Arriba se resume cómo se reparten hoy los montos: por ejemplo *Impulso de $50 a $499 · Órbita de $500 a $1,999 · Horizonte desde $2,000*.
+
+**Cómo se asigna el plan:** cada inversión queda en el plan visible de mayor «monto desde» que alcance su monto. No hay que hacer nada: el cliente escribe su monto y el plan aparece solo.
+
+**La inversión mínima** de la plataforma es el «monto desde» del plan visible más bajo. Si subes el de *Impulso* a 100, desde ese momento nadie podrá invertir menos de 100 USD, y la página de inicio lo dirá así. Nunca puede ser menor de 50 USD.
+
+### Crear o editar un plan
+
+Pulsa **Nuevo plan** (o **Editar** en un plan). Se abre el formulario debajo de la lista:
+
+![Nuevo plan](manual/img/15-nuevo-plan.png)
+
+Completa los campos:
+
+| Campo | Para qué sirve |
+|---|---|
+| Nombre del plan | Lo que ven los clientes (ej.: *Élite*) |
+| Monto desde (USD) | Desde cuánto aplica el plan. Entre 50 y 100,000 USD; no puede repetirse entre planes visibles |
+| Etiqueta corta | Texto pequeño sobre el nombre (ej.: *Para grandes capitales*) |
+| Orden en la página | 1, 2, 3… el orden de izquierda a derecha en la página de inicio |
+| Descripción | Una frase debajo del nombre |
+| Beneficios | Uno por línea (hasta 8). Aparecen con una ✓ |
+| Destacar como «Recomendado» | Resalta la tarjeta en la página de inicio |
+
+Pulsa **Crear plan** o **Guardar cambios**.
+
+> Cambiar un plan no modifica las inversiones que ya existen: conservan su monto, sus fechas y sus ganancias. Si cambias el nombre, el nuevo nombre se ve también en esas inversiones.
+
+### Ocultar o eliminar
+
+- **Ocultar:** el plan deja de mostrarse y de asignarse a inversiones nuevas. Las inversiones que ya tiene siguen igual. **Mostrar** lo vuelve a publicar.
+- **Eliminar:** solo aparece en planes **sin inversiones** (por ejemplo, uno que creaste por error). Los planes con inversiones solo se pueden ocultar.
+- Siempre debe quedar **al menos un plan visible**.
+
+> La ganancia diaria y el plazo mínimo de 30 días son **iguales para todos los planes**: la ganancia la fijas cada día en *Ganancia diaria*.
+
+---
+
+## 11. Clientes
 
 ![Clientes](manual/img/10-clientes.png)
 
@@ -211,7 +258,7 @@ No puedes suspenderte ni quitarte el rol a ti mismo.
 
 ---
 
-## 11. Ajustes y exportaciones
+## 12. Ajustes y exportaciones
 
 ![Ajustes](manual/img/13-ajustes.png)
 
@@ -221,15 +268,15 @@ No puedes suspenderte ni quitarte el rol a ti mismo.
 
 ---
 
-## 12. Actividad
+## 13. Actividad
 
 ![Actividad](manual/img/12-actividad.png)
 
-Registra **todas las acciones** hechas en el panel: quién las hizo, cuándo y con qué datos. Por ejemplo: tasas fijadas, pagos confirmados o rechazados, inversiones manuales o canceladas, retiros aprobados, pagados o rechazados, cuentas suspendidas y cambios de rol o de ajustes. **No se puede editar ni borrar**, así que te sirve de respaldo y de auditoría.
+Registra **todas las acciones** hechas en el panel: quién las hizo, cuándo y con qué datos. Por ejemplo: tasas fijadas, pagos confirmados o rechazados, inversiones manuales o canceladas, retiros aprobados, pagados o rechazados, cuentas suspendidas, cambios de planes y cambios de rol o de ajustes. **No se puede editar ni borrar**, así que te sirve de respaldo y de auditoría.
 
 ---
 
-## 13. Lo que ve el cliente
+## 14. Lo que ve el cliente
 
 Conocer su recorrido te ayuda a darle soporte.
 
@@ -255,7 +302,7 @@ Si elige **transferencia**, ve tus datos bancarios y su **referencia**, con un b
 
 ---
 
-## 14. Cómo se calculan las ganancias
+## 15. Cómo se calculan las ganancias
 
 Cada día la inversión gana **capital × porcentaje de ese día** (interés simple: las ganancias de un día no generan ganancias al día siguiente).
 
@@ -275,7 +322,7 @@ Cada día la inversión gana **capital × porcentaje de ese día** (interés sim
 
 ---
 
-## 15. Estados y su significado
+## 16. Estados y su significado
 
 **Inversión**
 
@@ -299,7 +346,7 @@ Cada día la inversión gana **capital × porcentaje de ese día** (interés sim
 
 ---
 
-## 16. Correos automáticos
+## 17. Correos automáticos
 
 | Cuándo | Quién lo recibe |
 |---|---|
@@ -313,7 +360,7 @@ Cada día la inversión gana **capital × porcentaje de ese día** (interés sim
 
 ---
 
-## 17. Métodos de pago
+## 18. Métodos de pago
 
 | Método | Cómo funciona |
 |---|---|
@@ -326,7 +373,7 @@ Cada día la inversión gana **capital × porcentaje de ese día** (interés sim
 
 ---
 
-## 18. Preguntas frecuentes
+## 19. Preguntas frecuentes
 
 **Olvidé fijar la tasa de un día.**
 Ese día se aplicó 1.5 %. Si quieres otro valor, ve a *Ganancia diaria* → historial → ✏️ en ese día.
@@ -355,12 +402,15 @@ Márcalo como desembolsado cuando lo veas, con el comprobante.
 **Sospecho de una cuenta.**
 **Suspéndela** desde su ficha: no podrá invertir ni retirar mientras revisas.
 
-**¿Puedo cambiar la inversión mínima, el plazo o la tasa por defecto?**
+**¿Puedo cambiar los planes o la inversión mínima?**
+Sí, en **Planes** (sección 10): crea, edita, ordena u oculta planes. La inversión mínima es la del plan visible más bajo.
+
+**¿Puedo cambiar el plazo de 30 días o la tasa por defecto de 1.5 %?**
 Son reglas de la plataforma: pídeselo a tu soporte técnico.
 
 ---
 
-## 19. Buenas prácticas
+## 20. Buenas prácticas
 
 - Fija la tasa **todos los días** a la misma hora.
 - Confirma un pago **solo** cuando veas el dinero en tu cuenta.

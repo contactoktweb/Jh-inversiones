@@ -24,4 +24,9 @@ export const AUDIT_LABELS: Record<string, string> = {
   "user.make_admin": "Dio rol de administrador",
   "user.remove_admin": "Quitó rol de administrador",
   "settings.update": "Actualizó los ajustes",
+  "plan.create": "Creó un plan",
+  "plan.update": "Editó un plan",
+  "plan.hide": "Ocultó un plan",
+  "plan.show": "Volvió a mostrar un plan",
+  "plan.delete": "Eliminó un plan",
 };

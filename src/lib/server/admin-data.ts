@@ -9,7 +9,7 @@ export type ClientProfile = {
 };
 export type AuditEntry = { id: number; actor_email: string; action: string; entity: string; entity_id: string | null; details: Record<string, unknown>; created_at: string };
 
-const INVESTMENT_COLUMNS = "id,user_id,plan_id,principal_usd,started_at,ends_at,status,payment_method,payment_reference,created_at,confirmed_at,admin_note";
+const INVESTMENT_COLUMNS = "id,user_id,plan_id,principal_usd,started_at,ends_at,status,payment_method,payment_reference,created_at,confirmed_at,admin_note,plan:plans(name)";
 
 /** Todo lo que necesita el panel de administración, leído con la service role key (solo en el servidor). */
 export async function loadAdminData() {
@@ -21,8 +21,9 @@ export async function loadAdminData() {
   ]);
   if (error || profilesError) throw new Error("No fue posible cargar los datos de administración.");
   const byId = new Map((profiles || []).map(p => [p.id, p]));
-  const rows: Investment[] = attachClaims((investments || []).map(row => ({
+  const rows: Investment[] = attachClaims((investments || []).map(({ plan, ...row }) => ({
     ...row,
+    plan_name: (plan as unknown as { name: string } | null)?.name || row.plan_id,
     principal_usd: Number(row.principal_usd),
     owner_email: byId.get(row.user_id)?.email || row.user_id,
     owner_name: byId.get(row.user_id)?.full_name || null,

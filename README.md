@@ -5,8 +5,9 @@ Plataforma de inversión en dólares con panel de cliente y panel de administrac
 - Inversión desde **50 USD**, plazo mínimo de **30 días**, ganancia **diaria** fijada por el administrador (**1.5 %** por defecto).
 - Pagos por **transferencia bancaria** (el administrador los confirma), **registro manual** y **pago de prueba**. La **pasarela con tarjeta** es la fase pendiente.
 - Retiros con datos de pago del cliente, aprobación, desembolso con comprobante o rechazo con motivo.
+- **Planes editables** por el administrador (crear, editar montos y beneficios, ordenar, ocultar, eliminar sin uso).
 - Gestión de clientes (suspender, roles), registro de actividad (auditoría) y exportación a CSV.
-- 20 pruebas unitarias y 29 pruebas de punta a punta contra Supabase real (incluido el envío de correos con Resend).
+- 21 pruebas unitarias y 36 pruebas de punta a punta contra Supabase real (incluido el envío de correos con Resend).
 
 ## Documentación y entrega
 
@@ -34,7 +35,7 @@ Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En res
 | `NEXT_PUBLIC_SITE_URL` | Sí | Dominio público (enlaces de correos y metadatos) |
 | `NEXT_PUBLIC_PAYMENT_METHODS` | No | `test,transfer` por defecto. Producción real: `transfer`. Pasarela: añadir `stripe` |
 | `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_CONTACT_WHATSAPP` | No | Contacto público |
-| `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `ADMIN_NOTIFICATION_EMAIL` | No | Correos de aviso (pagos, retiros, confirmaciones) |
+| `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `ADMIN_NOTIFICATION_EMAIL` | No | Correos de aviso (pagos, retiros, confirmaciones). Sin dominio: remitente `onboarding@resend.dev` (ver CONFIGURACION 1.1) |
 | `PAYMENTS_APPROVED`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | No | Solo para la pasarela (fase pendiente) |
 
 ## 2. Rutas
@@ -52,6 +53,7 @@ Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En res
 | `/admin/pagos` | Confirmar o rechazar transferencias, registrar pagos manuales, historial |
 | `/admin/retiros` | Aprobar, marcar como desembolsado (con comprobante) o rechazar (con motivo) |
 | `/admin/inversiones` | Todas las inversiones, filtros y cancelación |
+| `/admin/planes` | Crear, editar, ordenar, ocultar o eliminar planes (la web y el mínimo se actualizan solos) |
 | `/admin/clientes` y `/admin/clientes/[id]` | Lista y ficha del cliente; suspender, reactivar y roles |
 | `/admin/actividad` | Registro de auditoría |
 | `/admin/ajustes` | Datos de transferencia, configuración actual y exportaciones CSV |
@@ -68,6 +70,7 @@ Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En res
 | `POST /api/admin/investments` | Admin | Registra una inversión manual o cancela una inversión |
 | `POST /api/admin/claims` | Admin | Aprueba, desembolsa o rechaza un retiro |
 | `POST /api/admin/users` | Admin | Suspende, reactiva o cambia el rol de una cuenta |
+| `POST /api/admin/plans` | Admin | Crea, edita, oculta o elimina un plan |
 | `POST /api/admin/settings` | Admin | Guarda los ajustes |
 | `GET /api/admin/export?tipo=` | Admin | CSV de `inversiones`, `retiros`, `clientes` o `actividad` |
 | `POST /api/webhooks/stripe` | Stripe | Fase pendiente |
@@ -85,7 +88,7 @@ src/
     admin/                  # Páginas del panel de administración
   lib/
     rates.ts                # Reglas: mínimo, plazo, tasa por defecto y cálculo de ganancias
-    plans.ts                # Planes según el monto
+    plans.ts                # Planes: tipo, planes iniciales y plan según el monto
     finance.ts              # Formatos (USD, fechas en hora de Bogotá) y etiquetas
     config.ts               # Métodos de pago y configuración
     brand.ts                # Marca y contacto
@@ -96,6 +99,7 @@ src/
       admin-data.ts         # Lecturas del panel de administración
       audit.ts              # Registro de actividad
       notify.ts             # Correos con Resend
+      plans.ts              # Lectura de los planes desde Supabase
 supabase/
   schema.sql                # Tablas, restricciones y RLS (re-ejecutable)
   config.toml               # Supabase local para desarrollo y pruebas
@@ -110,6 +114,7 @@ docs/                       # Manual del dueño y guía de la pasarela
 
 | Tabla | Contenido |
 |---|---|
+| `plans` | Planes editables: nombre, monto desde, beneficios, destacado, orden, visible |
 | `profiles` | Rol (`user`/`admin`), estado (`active`/`suspended`), nombre, teléfono, país, datos de retiro |
 | `investments` | Monto, plan, fechas, `payment_method` (`test`, `transfer`, `manual`, `stripe`), referencia única, estado (`pending_payment`, `active`, `closed`, `cancelled`) |
 | `daily_rates` | Tasa por día (`AAAA-MM-DD`, hora de Bogotá) |
@@ -137,8 +142,8 @@ Correos locales (confirmación y recuperación): Mailpit en http://127.0.0.1:543
 
 ```bash
 pnpm typecheck   # Tipos TypeScript
-pnpm test        # 20 pruebas unitarias (Vitest)
-pnpm test:e2e    # 29 pruebas de punta a punta (Playwright + Supabase local en Docker)
+pnpm test        # 21 pruebas unitarias (Vitest)
+pnpm test:e2e    # 36 pruebas de punta a punta (Playwright + Supabase local en Docker)
 ```
 
 `pnpm test:e2e` (`scripts/test-e2e.sh`) levanta Supabase local, **reinicia la base de datos**, compila la app con las claves locales (por defecto en el formato nuevo `sb_publishable_`/`sb_secret_`; `SUPABASE_KEYS=legacy` usa las JWT antiguas), simula la API de Resend en el puerto 4010 y ejecuta Playwright. Con `SKIP_BUILD=1` reutiliza la última compilación. El informe queda en `test-results/e2e-report`.
@@ -147,6 +152,7 @@ Cobertura de las pruebas de punta a punta:
 
 - **Cuentas:** registro con confirmación por correo abierto en otro navegador, contraseña incorrecta, recuperación de contraseña (y enlace de un solo uso), Mi cuenta.
 - **Ciclo completo:** aviso diario y tasa, datos de transferencia, pago de prueba, transferencia pendiente y confirmada, transferencia rechazada, bloqueo por plazo mínimo, retiro rechazado y vuelto a pedir, aprobado y desembolsado con comprobante, auditoría y CSV.
+- **Planes:** crear, destacar, mostrar en la web, asignación por monto, editar, ocultar, eliminar, mínimo dinámico, permisos y RLS.
 - **Administración:** pago manual, referencia duplicada, correo inexistente, clientes y ficha, suspensión y reactivación, cancelación, dar y quitar el rol, autoprotección del administrador, todas las páginas sin errores.
 - **Correos (Resend):** avisos al administrador y al cliente en cada paso, con remitente, destinatario y contenido verificados.
 - **Seguridad:** redirecciones de páginas privadas, permisos de todas las APIs, validaciones de monto, método y términos, el administrador no puede invertir, bloqueo de solicitudes desde otros sitios, RLS (lectura aislada; sin inserciones, cambios de tasa, de ajustes ni de rol).

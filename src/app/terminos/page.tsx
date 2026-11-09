@@ -3,10 +3,13 @@ import Link from "next/link";
 import Logo from "@/components/logo";
 import ContactLine from "@/components/contact-line";
 import { brand } from "@/lib/brand";
-import { DEFAULT_DAILY_RATE_PCT, MIN_INVESTMENT_USD, MIN_TERM_DAYS } from "@/lib/rates";
+import { DEFAULT_DAILY_RATE_PCT, MIN_TERM_DAYS } from "@/lib/rates";
+import { minInvestment } from "@/lib/plans";
+import { getPlans } from "@/lib/server/plans";
 
 export const metadata:Metadata={title:"Términos y condiciones"};
-export default function Terms(){return <div className="simple-page"><header className="simple-header"><Logo/><Link href="/">Volver al inicio</Link></header><main className="simple-content">
+export const revalidate=60;
+export default async function Terms(){const MIN_INVESTMENT_USD=minInvestment(await getPlans());return <div className="simple-page"><header className="simple-header"><Logo/><Link href="/">Volver al inicio</Link></header><main className="simple-content">
   <h1>Términos y condiciones</h1>
   <p>Al crear una cuenta o invertir en {brand.name} aceptas estas condiciones.</p>
   <h2>1. Inversión</h2>

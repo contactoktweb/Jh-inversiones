@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Activity, ArrowUpRight, Banknote, CalendarDays, CircleHelp, CreditCard, LayoutDashboard, LogOut, Menu, Percent, Settings2, Sparkles, UserRound, Users, Wallet, X, type LucideIcon } from "lucide-react";
+import { Activity, ArrowUpRight, Banknote, CalendarDays, CircleHelp, CreditCard, LayoutDashboard, LogOut, Menu, Layers, Percent, Settings2, Sparkles, UserRound, Users, Wallet, X, type LucideIcon } from "lucide-react";
 import Logo from "./logo";
 import { formatDate } from "@/lib/finance";
 
@@ -22,6 +22,7 @@ const NAV: Record<Variant, NavItem[]> = {
     { href: "/admin/pagos", label: "Pagos", icon: CreditCard },
     { href: "/admin/retiros", label: "Retiros", icon: Banknote },
     { href: "/admin/inversiones", label: "Inversiones", icon: Wallet },
+    { href: "/admin/planes", label: "Planes", icon: Layers },
     { href: "/admin/clientes", label: "Clientes", icon: Users },
     { href: "/admin/actividad", label: "Actividad", icon: Activity },
     { href: "/admin/ajustes", label: "Ajustes", icon: Settings2 },

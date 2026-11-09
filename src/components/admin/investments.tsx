@@ -3,7 +3,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Ban, Download, Search, Wallet } from "lucide-react";
 import { formatDate, formatUsd, PAYMENT_METHOD_LABELS, type Investment } from "@/lib/finance";
-import { getPlan } from "@/lib/plans";
 import { calculateEarnings, type DailyRates } from "@/lib/rates";
 import { ActionDialog, AnimatePresence, ClaimBadge, Feedback, Filters, InvestmentBadge, matches, useAdminAction, useDialog } from "./ui";
 
@@ -28,7 +27,7 @@ export default function AdminInvestments({ investments, rates, renderedAt, compa
       {visible.length === 0 ? <p className="chart-note">No hay inversiones con estos filtros.</p> :
         <div className="table-scroll"><table className="invest-table"><thead><tr>{!compact && <th>CLIENTE</th>}<th>PLAN</th><th>MONTO</th><th>PAGO</th><th>INICIO</th><th>DÍAS</th><th>GANANCIA</th><th>RETIRO DESDE</th><th>ESTADO</th><th></th></tr></thead><tbody>
           {visible.map(r => <tr key={r.id}>{!compact && <td>{r.user_id ? <Link className="admin-link" href={`/admin/clientes/${r.user_id}`}>{r.owner_name || r.owner_email}</Link> : r.owner_email}</td>}
-            <td>{getPlan(r.plan_id)?.name || r.plan_id}</td><td className="cell-strong">{formatUsd(r.principal_usd)}</td>
+            <td>{r.plan_name || r.plan_id}</td><td className="cell-strong">{formatUsd(r.principal_usd)}</td>
             <td>{PAYMENT_METHOD_LABELS[r.payment_method || ""] || r.payment_method}<small className="cell-sub"><code>{r.payment_reference}</code></small></td>
             <td>{r.status === "pending_payment" ? "—" : formatDate(r.started_at)}</td><td>{r.calc.daysElapsed}</td>
             <td className="gain-value">{r.status === "active" || r.status === "closed" ? `+${formatUsd(r.calc.earnings)}` : "—"}</td>

@@ -1,24 +1,39 @@
 import { describe, expect, it } from "vitest";
-import { getPlan, planForAmount, plans } from "@/lib/plans";
+import { activePlans, DEFAULT_PLANS, minInvestment, planForAmount, planName, type Plan } from "@/lib/plans";
 import { MIN_INVESTMENT_USD } from "@/lib/rates";
 import { formatUsd } from "@/lib/finance";
 import { isUuid, optionalText } from "@/lib/server/http";
 import { transferReference } from "@/lib/server/payments";
 
+const plans = DEFAULT_PLANS;
+const custom: Plan[] = [
+  ...DEFAULT_PLANS.map(p => p.id === "inicio" ? { ...p, active: false } : p),
+  { id: "elite-ab12", name: "Élite", eyebrow: "", caption: "", minUsd: 10000, features: [], highlighted: false, active: true, sortOrder: 4 },
+];
+
 describe("planes", () => {
-  it("la inversión mínima es de 50 USD", () => {
+  it("la inversión mínima es de 50 USD con los planes iniciales", () => {
     expect(MIN_INVESTMENT_USD).toBe(50);
-    expect(plans[0].minUsd).toBe(50);
+    expect(minInvestment(plans)).toBe(50);
   });
   it("asigna el plan según el monto", () => {
-    expect(planForAmount(50).id).toBe("inicio");
-    expect(planForAmount(499).id).toBe("inicio");
-    expect(planForAmount(500).id).toBe("evolucion");
-    expect(planForAmount(2000).id).toBe("vision");
-    expect(getPlan("evolucion")?.name).toBe("Órbita");
+    expect(planForAmount(plans, 50)?.id).toBe("inicio");
+    expect(planForAmount(plans, 499)?.id).toBe("inicio");
+    expect(planForAmount(plans, 500)?.id).toBe("evolucion");
+    expect(planForAmount(plans, 2000)?.id).toBe("vision");
+    expect(planName(plans, "evolucion")).toBe("Órbita");
+    expect(planName(plans, "borrado")).toBe("borrado");
   });
-  it("todos los planes tienen plazo mínimo de 30 días", () => {
-    for (const plan of plans) expect(plan.durationDays).toBe(30);
+  it("respeta los planes que agrega u oculta el administrador", () => {
+    expect(minInvestment(custom)).toBe(500);
+    expect(planForAmount(custom, 100)).toBeUndefined();
+    expect(planForAmount(custom, 9999)?.id).toBe("vision");
+    expect(planForAmount(custom, 10000)?.id).toBe("elite-ab12");
+    expect(activePlans(custom).map(p => p.id)).toEqual(["evolucion", "vision", "elite-ab12"]);
+    expect(planName(custom, "inicio")).toBe("Impulso");
+  });
+  it("nunca baja el mínimo de 50 USD", () => {
+    expect(minInvestment([])).toBe(50);
   });
 });
 

@@ -6,8 +6,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Building2, CalendarDays, CircleCheck, Clock3, Copy, CreditCard, FlaskConical, LoaderCircle, LockKeyhole, Percent, ShieldCheck, Wallet } from "lucide-react";
 import Logo from "./logo";
 import { formatDate, formatUsd } from "@/lib/finance";
-import { planForAmount } from "@/lib/plans";
-import { MAX_INVESTMENT_USD, MIN_INVESTMENT_USD, MIN_TERM_DAYS } from "@/lib/rates";
+import { activePlans, minInvestment, planForAmount, type Plan } from "@/lib/plans";
+import { MAX_INVESTMENT_USD, MIN_TERM_DAYS } from "@/lib/rates";
 import type { PaymentMethod } from "@/lib/config";
 
 type Receipt = { status: "accepted" | "pending"; reference: string; amountUsd: number; planName: string };
@@ -17,7 +17,9 @@ const METHOD_INFO: Record<PaymentMethod, { label: string; help: string; icon: ty
   stripe: { label: "Tarjeta de crédito o débito", help: "Pago seguro con la pasarela de pagos.", icon: CreditCard },
 };
 
-export default function InvestCheckout({ initialAmount, email, todayRate, methods, transferInstructions }: {initialAmount:number;email:string;todayRate:number;methods:PaymentMethod[];transferInstructions:string}) {
+export default function InvestCheckout({ initialAmount, email, todayRate, methods, transferInstructions, plans }: {initialAmount:number;email:string;todayRate:number;methods:PaymentMethod[];transferInstructions:string;plans:Plan[]}) {
+  const MIN_INVESTMENT_USD=minInvestment(plans);
+  const presets=[...new Set([...activePlans(plans).map(p=>p.minUsd),MIN_INVESTMENT_USD*2,1000])].filter(v=>v>=MIN_INVESTMENT_USD&&v<=MAX_INVESTMENT_USD).sort((a,b)=>a-b).slice(0,6);
   const router=useRouter();
   const [amount,setAmount]=useState(String(initialAmount));
   const [method,setMethod]=useState<PaymentMethod>(methods[0]);
@@ -28,7 +30,7 @@ export default function InvestCheckout({ initialAmount, email, todayRate, method
   const [receipt,setReceipt]=useState<Receipt|null>(null);
   const value=Number(amount);
   const valid=Number.isInteger(value)&&value>=MIN_INVESTMENT_USD&&value<=MAX_INVESTMENT_USD;
-  const plan=planForAmount(valid?value:MIN_INVESTMENT_USD);
+  const plan=planForAmount(plans,valid?value:MIN_INVESTMENT_USD);
   const dailyGain=valid?value*todayRate/100:0;
   const availableAt=Date.now()+MIN_TERM_DAYS*86_400_000;
 
@@ -81,9 +83,9 @@ export default function InvestCheckout({ initialAmount, email, todayRate, method
           <label htmlFor="invest-amount">Monto en dólares (USD)</label>
           <div className="invest-amount"><span>$</span><input id="invest-amount" inputMode="numeric" type="number" min={MIN_INVESTMENT_USD} max={MAX_INVESTMENT_USD} step={1} required value={amount} onChange={e=>setAmount(e.target.value)}/><span>USD</span></div>
           {!valid&&amount!==""&&<p className="invest-error">Ingresa un monto entero entre {formatUsd(MIN_INVESTMENT_USD)} y {formatUsd(MAX_INVESTMENT_USD)}.</p>}
-          <div className="invest-presets">{[50,100,500,1000,2000].map(v=><button type="button" key={v} className={value===v?"active":""} onClick={()=>setAmount(String(v))}>${v.toLocaleString("en-US")}</button>)}</div>
+          <div className="invest-presets">{presets.map(v=><button type="button" key={v} className={value===v?"active":""} onClick={()=>setAmount(String(v))}>${v.toLocaleString("en-US")}</button>)}</div>
           <dl className="invest-summary">
-            <div><dt><Wallet size={15}/> Plan</dt><dd>{plan.name}</dd></div>
+            <div><dt><Wallet size={15}/> Plan</dt><dd>{plan?.name||"—"}</dd></div>
             <div><dt><Percent size={15}/> Ganancia de hoy</dt><dd>{todayRate}% · +{formatUsd(dailyGain)} al día</dd></div>
             <div><dt><CalendarDays size={15}/> Retiro disponible desde</dt><dd>{formatDate(availableAt)}</dd></div>
             <div><dt><ShieldCheck size={15}/> Cuenta</dt><dd>{email}</dd></div>

@@ -102,7 +102,7 @@ test.describe.serial("Gestión administrativa", () => {
   test("las páginas de administración cargan sin errores", async () => {
     const errors: string[] = [];
     admin.on("pageerror", e => errors.push(e.message));
-    for (const path of ["/admin", "/admin/tasas", "/admin/pagos", "/admin/retiros", "/admin/inversiones", "/admin/clientes", "/admin/actividad", "/admin/ajustes"]) {
+    for (const path of ["/admin", "/admin/tasas", "/admin/pagos", "/admin/retiros", "/admin/inversiones", "/admin/planes", "/admin/clientes", "/admin/actividad", "/admin/ajustes"]) {
       const res = await admin.goto(path);
       expect(res?.status(), path).toBe(200);
     }
