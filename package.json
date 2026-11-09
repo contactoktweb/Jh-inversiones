@@ -8,7 +8,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "bash scripts/test-e2e.sh"
+    "test:e2e": "bash scripts/test-e2e.sh",
+    "manual:pdf": "node scripts/build-manual.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
@@ -26,6 +27,7 @@
     "@types/node": "^22.15.0",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
+    "marked": "^15.0.12",
     "typescript": "^5.8.2",
     "vitest": "^3.2.7"
   }

@@ -32,7 +32,7 @@ const DIALOG: Record<UserAction, { title: string; text: string; label: string; t
   suspend: { title: "Suspender cuenta", text: "El cliente podrá entrar y ver su panel, pero no podrá invertir ni solicitar retiros hasta que lo reactives.", label: "Suspender", tone: "danger" },
   activate: { title: "Reactivar cuenta", text: "El cliente podrá volver a invertir y solicitar retiros.", label: "Reactivar", tone: "success" },
   make_admin: { title: "Dar rol de administrador", text: "Tendrá acceso completo a este panel: tasas, pagos, retiros y clientes.", label: "Hacer administrador", tone: "primary" },
-  remove_admin: { title: "Quitar rol de administrador", text: "Volverá a ser una cuenta de inversionista. (Si su correo está en ADMIN_EMAILS seguirá siendo administrador.)", label: "Quitar rol", tone: "danger" },
+  remove_admin: { title: "Quitar rol de administrador", text: "Volverá a ser una cuenta de inversionista. (Si es uno de los administradores principales de la plataforma, seguirá siéndolo.)", label: "Quitar rol", tone: "danger" },
 };
 
 export function ClientActions({ client, isSelf }: { client: ClientProfile; isSelf: boolean }) {

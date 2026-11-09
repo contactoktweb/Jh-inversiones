@@ -6,25 +6,22 @@ Plataforma de inversión en dólares con panel de cliente y panel de administrac
 - Pagos por **transferencia bancaria** (el administrador los confirma), **registro manual** y **pago de prueba**. La **pasarela con tarjeta** es la fase pendiente.
 - Retiros con datos de pago del cliente, aprobación, desembolso con comprobante o rechazo con motivo.
 - Gestión de clientes (suspender, roles), registro de actividad (auditoría) y exportación a CSV.
-- 20 pruebas unitarias y 27 pruebas de punta a punta contra Supabase real.
+- 20 pruebas unitarias y 29 pruebas de punta a punta contra Supabase real (incluido el envío de correos con Resend).
 
-## Documentación
+## Documentación y entrega
 
-| Documento | Para quién |
+| Archivo | Para quién |
 |---|---|
-| [`docs/MANUAL-DEL-DUENO.md`](docs/MANUAL-DEL-DUENO.md) | **Dueño / administrador:** puesta en marcha, rutina diaria y uso de cada sección, con capturas |
-| [`docs/pasarela-de-pagos.md`](docs/pasarela-de-pagos.md) | **Desarrollador:** fase pendiente, cómo conectar la pasarela |
-| Este README | **Desarrollador:** arquitectura, variables, comandos y pruebas |
+| [`docs/Manual-de-uso-JH-Inversiones.pdf`](docs/Manual-de-uso-JH-Inversiones.pdf) | **Cliente / dueño:** manual de uso del panel (sin configuración técnica). Se regenera con `pnpm manual:pdf` desde [`docs/MANUAL-DE-USO.md`](docs/MANUAL-DE-USO.md) |
+| [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md) | **Quien instala:** Supabase, Resend (SMTP y API), Vercel, prueba de aceptación |
+| [`supabase/schema.sql`](supabase/schema.sql) | SQL a ejecutar en Supabase |
+| [`supabase/templates/`](supabase/templates) | Plantillas de los correos de confirmación y recuperación |
+| [`deploy/variables-vercel.env`](deploy/variables-vercel.env) | Variables de entorno para pegar en Vercel |
+| [`docs/pasarela-de-pagos.md`](docs/pasarela-de-pagos.md) | Fase pendiente: pasarela con tarjeta |
 
 ## 1. Puesta en marcha
 
-Resumen (el detalle está en el manual del dueño, §2):
-
-1. Crea un proyecto en Supabase y ejecuta `supabase/schema.sql` en el *SQL Editor*. Es re-ejecutable y actualiza versiones anteriores sin perder datos.
-2. En *Authentication → URL Configuration* define *Site URL* `https://TU_DOMINIO` y *Redirect URLs* `https://TU_DOMINIO/**`.
-3. En *Authentication → Email Templates* usa `supabase/templates/confirmation.html` (*Confirm signup*) y `supabase/templates/recovery.html` (*Reset password*).
-4. Carga las variables de `.env.example` en Vercel (la tabla está abajo) y despliega.
-5. Regístrate con el correo de `ADMIN_EMAILS`, confírmalo y entra: llegarás a `/admin`.
+Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En resumen: verificar el dominio en Resend → ejecutar `supabase/schema.sql` → configurar en Supabase el SMTP de Resend, las plantillas y las URLs → pegar `deploy/variables-vercel.env` en Vercel y desplegar → prueba de aceptación.
 
 ### Variables de entorno
 
@@ -141,16 +138,17 @@ Correos locales (confirmación y recuperación): Mailpit en http://127.0.0.1:543
 ```bash
 pnpm typecheck   # Tipos TypeScript
 pnpm test        # 20 pruebas unitarias (Vitest)
-pnpm test:e2e    # 27 pruebas de punta a punta (Playwright + Supabase local en Docker)
+pnpm test:e2e    # 29 pruebas de punta a punta (Playwright + Supabase local en Docker)
 ```
 
-`pnpm test:e2e` (`scripts/test-e2e.sh`) levanta Supabase local, **reinicia la base de datos**, compila la app con las claves locales y ejecuta Playwright. Con `SKIP_BUILD=1` reutiliza la última compilación. El informe queda en `test-results/e2e-report`.
+`pnpm test:e2e` (`scripts/test-e2e.sh`) levanta Supabase local, **reinicia la base de datos**, compila la app con las claves locales (por defecto en el formato nuevo `sb_publishable_`/`sb_secret_`; `SUPABASE_KEYS=legacy` usa las JWT antiguas), simula la API de Resend en el puerto 4010 y ejecuta Playwright. Con `SKIP_BUILD=1` reutiliza la última compilación. El informe queda en `test-results/e2e-report`.
 
 Cobertura de las pruebas de punta a punta:
 
 - **Cuentas:** registro con confirmación por correo abierto en otro navegador, contraseña incorrecta, recuperación de contraseña (y enlace de un solo uso), Mi cuenta.
 - **Ciclo completo:** aviso diario y tasa, datos de transferencia, pago de prueba, transferencia pendiente y confirmada, transferencia rechazada, bloqueo por plazo mínimo, retiro rechazado y vuelto a pedir, aprobado y desembolsado con comprobante, auditoría y CSV.
 - **Administración:** pago manual, referencia duplicada, correo inexistente, clientes y ficha, suspensión y reactivación, cancelación, dar y quitar el rol, autoprotección del administrador, todas las páginas sin errores.
+- **Correos (Resend):** avisos al administrador y al cliente en cada paso, con remitente, destinatario y contenido verificados.
 - **Seguridad:** redirecciones de páginas privadas, permisos de todas las APIs, validaciones de monto, método y términos, el administrador no puede invertir, bloqueo de solicitudes desde otros sitios, RLS (lectura aislada; sin inserciones, cambios de tasa, de ajustes ni de rol).
 
 ## 6. Seguridad
@@ -170,4 +168,5 @@ pnpm start       # Servir la compilación
 pnpm typecheck   # Tipos
 pnpm test        # Pruebas unitarias
 pnpm test:e2e    # Pruebas de punta a punta
+pnpm manual:pdf  # Regenera el PDF del manual de uso
 ```

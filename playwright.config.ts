@@ -6,6 +6,8 @@ import { defineConfig } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "tests/e2e",
+  // Imita la API de Resend para verificar los correos (ver tests/e2e/mock-resend.ts).
+  globalSetup: "./tests/e2e/mock-resend.ts",
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,
