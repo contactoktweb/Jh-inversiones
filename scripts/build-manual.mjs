@@ -1,5 +1,6 @@
-// Genera el PDF del manual de uso a partir de docs/MANUAL-DE-USO.md.
+// Genera los PDF de la documentación de uso.
 // Uso: pnpm manual:pdf   →   docs/Manual-de-uso-JH-Inversiones.pdf
+//      pnpm guia:pdf     →   docs/Guia-del-administrador-JH-Inversiones.pdf
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -8,8 +9,24 @@ import { chromium } from "@playwright/test";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const docs = path.join(root, "docs");
-const source = readFileSync(path.join(docs, "MANUAL-DE-USO.md"), "utf8");
-const output = path.join(docs, "Manual-de-uso-JH-Inversiones.pdf");
+const variants = {
+  manual: {
+    source: "MANUAL-DE-USO.md", output: "Manual-de-uso-JH-Inversiones.pdf", footer: "Manual de uso",
+    cover: "Manual de <em>uso</em>", meta: "Panel de administración", extraCss: "",
+    facts: ["Inversión desde 50 USD", "Plazo mínimo de 30 días", "Ganancia diaria (1.5 % por defecto)", "Todo en dólares (USD)"],
+  },
+  guia: {
+    source: "GUIA-ADMINISTRADOR.md", output: "Guia-del-administrador-JH-Inversiones.pdf", footer: "Guía del administrador",
+    cover: "Guía del <em>administrador</em>", meta: "Guía rápida",
+    facts: ["Cómo entrar", "Las 3 tareas del día", "Paso a paso con imágenes"],
+    // Letra más grande para una lectura más cómoda.
+    extraCss: "body{font-size:12pt;line-height:1.6} h3{font-size:13.5pt} table{font-size:11pt} li{margin:2mm 0} figure img{max-height:105mm}",
+  },
+};
+const variant = variants[process.argv[2] || "manual"];
+if (!variant) throw new Error(`Usa: node scripts/build-manual.mjs [${Object.keys(variants).join("|")}]`);
+const source = readFileSync(path.join(docs, variant.source), "utf8");
+const output = path.join(docs, variant.output);
 
 // El título (# …) y la primera línea de introducción van en la portada.
 const intro = source.split("\n").find(l => l && !l.startsWith("#")) || "";
@@ -75,13 +92,14 @@ const html = `<!doctype html><html lang="es"><head><meta charset="utf-8">
   figcaption { font-size: 8.5pt; color: var(--muted); margin-top: 2mm; }
   .note { background: var(--note); border: 1px solid var(--noteline); border-radius: 8px; padding: 3mm 4mm; margin: 3mm 0 5mm; break-inside: avoid; }
   .note p { margin: 0; }
+  ${variant.extraCss}
 </style></head><body>
 <section class="cover">
   <div class="brand"><div class="mark">JH</div><span>JH Inversiones · Administración</span></div>
-  <h1>Manual de <em>uso</em></h1>
+  <h1>${variant.cover}</h1>
   <p class="lede">${intro}</p>
-  <ul class="facts"><li>Inversión desde 50 USD</li><li>Plazo mínimo de 30 días</li><li>Ganancia diaria (1.5 % por defecto)</li><li>Todo en dólares (USD)</li></ul>
-  <div class="meta"><span>Panel de administración</span><span>Versión ${date}</span></div>
+  <ul class="facts">${variant.facts.map(f => `<li>${f}</li>`).join("")}</ul>
+  <div class="meta"><span>${variant.meta}</span><span>Versión ${date}</span></div>
 </section>
 <section class="toc"><h2>Contenido</h2><ol>${sections.map(s => `<li><span class="n">${s.number}</span><a href="#${s.id}">${s.title}</a></li>`).join("")}</ol></section>
 <main>${body}</main>
@@ -96,7 +114,7 @@ await page.evaluate(() => document.fonts.ready);
 await page.pdf({
   path: output, format: "A4", printBackground: true, preferCSSPageSize: true,
   displayHeaderFooter: true, headerTemplate: "<span></span>",
-  footerTemplate: `<div style="width:100%;font:8px Arial,sans-serif;color:#7b84a3;padding:0 16mm;display:flex;justify-content:space-between"><span>JH Inversiones · Manual de uso</span><span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span></div>`,
+  footerTemplate: `<div style="width:100%;font:8px Arial,sans-serif;color:#7b84a3;padding:0 16mm;display:flex;justify-content:space-between"><span>JH Inversiones · ${variant.footer}</span><span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span></div>`,
 });
 await browser.close();
 const { unlinkSync } = await import("node:fs");
