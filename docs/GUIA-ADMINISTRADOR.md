@@ -37,10 +37,10 @@ Si nunca has entrado, primero crea tu cuenta **con tu correo de administrador**:
 
 1. En la pantalla de inicio de sesión, pulsa **¿No tienes cuenta? Regístrate**.
 2. Escribe tu nombre, **tu correo de administrador** y una contraseña nueva.
-3. Revisa tu correo: te llega un mensaje **«Confirma tu cuenta»**. Ábrelo y pulsa el enlace.
-4. Vuelve a la página y entra con tu correo y tu contraseña (paso 1).
+3. Pulsa **Crear cuenta**. Entrarás directo a tu panel de administrador.
+4. Si la página te pide **confirmar tu correo**, abre el mensaje **«Confirma tu cuenta»** que te llegó, pulsa el enlace y luego entra con tu correo y tu contraseña (paso 1).
 
-> Si el correo de confirmación no aparece, revisa la carpeta de **spam** o **correo no deseado**.
+> Si un correo de la plataforma no aparece, revisa la carpeta de **spam** o **correo no deseado**.
 
 **¿Olvidaste tu contraseña?** En la pantalla de inicio de sesión pulsa **¿Olvidaste tu contraseña?**, escribe tu correo y sigue el enlace que te llega para crear una nueva.
 
