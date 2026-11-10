@@ -4,7 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 export const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const MAILPIT = process.env.E2E_MAILPIT_URL || "http://127.0.0.1:54324";
 
 /** Cliente con la service role key: solo para preparar datos en las pruebas. */
 export const service = () => createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
@@ -33,16 +32,19 @@ export async function newSession(browser: Browser, email: string) {
   return page;
 }
 
-/** Último enlace recibido por un correo en Mailpit (servidor de correo local de Supabase). */
+type SentEmail = { to: string | string[]; subject: string; html: string };
+/** Correos enviados a una dirección por la API de Resend (simulada en tests/e2e/mock-resend.ts). */
+export async function emailsTo(to: string): Promise<SentEmail[]> {
+  const sent: SentEmail[] = await (await fetch("http://127.0.0.1:4010/__sent")).json();
+  return sent.filter(e => (Array.isArray(e.to) ? e.to : [e.to]).includes(to));
+}
+
+/** Último correo recibido por una dirección y el enlace de su botón. */
 export async function lastEmailLink(to: string) {
   for (let i = 0; i < 20; i++) {
-    const list = await (await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:${to}`)}`)).json();
-    const id = list.messages?.[0]?.ID;
-    if (id) {
-      const msg = await (await fetch(`${MAILPIT}/api/v1/message/${id}`)).json();
-      const href = /href="([^"]+)"/.exec(msg.HTML)?.[1];
-      if (href) return { subject: msg.Subject as string, link: href.replace(/&amp;/g, "&") };
-    }
+    const msg = (await emailsTo(to)).at(-1);
+    const href = msg && /href="([^"]+)"/.exec(msg.html)?.[1];
+    if (msg && href) return { subject: msg.subject, link: href.replace(/&amp;/g, "&") };
     await new Promise(r => setTimeout(r, 500));
   }
   throw new Error(`No llegó ningún correo a ${to}`);

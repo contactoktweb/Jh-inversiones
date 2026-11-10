@@ -21,10 +21,12 @@ function InnerForm() {
   const next = safeNext(params.get("next"));
   const signup = mode==="signup";
 
-  function callbackUrl(target: string) {
-    const url=new URL("/auth/callback",window.location.origin);
-    url.searchParams.set("next",target);
-    return url.toString();
+  // Registro y recuperación pasan por el servidor: los correos salen por la API de Resend, no por Supabase.
+  async function postAuth(path: string, body: Record<string,string>) {
+    const res=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error||"No se pudo completar la operación.");
+    return data as {confirm?: boolean};
   }
 
   async function submit(e:React.FormEvent){
@@ -33,17 +35,13 @@ function InnerForm() {
       const supabase=getSupabaseBrowser();
       if(!supabase) throw new Error("El acceso aún no está configurado: faltan las claves de Supabase.");
       if(mode==="forgot"){
-        const {error: authError}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:callbackUrl("/restablecer")});
-        if(authError) throw authError;
+        await postAuth("/api/auth/recover",{email});
         setMessage("Si el correo está registrado, te enviamos un enlace para crear una nueva contraseña.");
         return;
       }
       if(signup){
-        const {data,error: authError}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:callbackUrl(next||"/dashboard")}});
-        if(authError) throw authError;
-        if(data.session){router.push(next||"/dashboard");router.refresh();return;}
-        setMessage("Cuenta creada. Revisa tu correo y confirma tu cuenta para entrar.");setMode("login");
-        return;
+        const result=await postAuth("/api/auth/signup",{email,password});
+        if(result.confirm){setMessage("Cuenta creada. Revisa tu correo y confirma tu cuenta para entrar.");setMode("login");return;}
       }
       const {data,error: authError}=await supabase.auth.signInWithPassword({email,password});
       if(authError) throw new Error(authError.message==="Invalid login credentials"?"Correo o contraseña incorrectos.":authError.message==="Email not confirmed"?"Confirma tu correo antes de iniciar sesión.":authError.message);

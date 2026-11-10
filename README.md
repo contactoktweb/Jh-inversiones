@@ -14,15 +14,14 @@ Plataforma de inversión en dólares con panel de cliente y panel de administrac
 | Archivo | Para quién |
 |---|---|
 | [`docs/Manual-de-uso-JH-Inversiones.pdf`](docs/Manual-de-uso-JH-Inversiones.pdf) | **Cliente / dueño:** manual de uso del panel (sin configuración técnica). Se regenera con `pnpm manual:pdf` desde [`docs/MANUAL-DE-USO.md`](docs/MANUAL-DE-USO.md) |
-| [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md) | **Quien instala:** Supabase, Resend (SMTP y API), Vercel, prueba de aceptación |
+| [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md) | **Quien instala:** Supabase, Resend (API), Vercel, prueba de aceptación |
 | [`supabase/schema.sql`](supabase/schema.sql) | SQL a ejecutar en Supabase |
-| [`supabase/templates/`](supabase/templates) | Plantillas de los correos de confirmación y recuperación |
 | [`deploy/variables-vercel.env`](deploy/variables-vercel.env) | Variables de entorno para pegar en Vercel |
 | [`docs/pasarela-de-pagos.md`](docs/pasarela-de-pagos.md) | Fase pendiente: pasarela con tarjeta |
 
 ## 1. Puesta en marcha
 
-Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En resumen: verificar el dominio en Resend → ejecutar `supabase/schema.sql` → configurar en Supabase el SMTP de Resend, las plantillas y las URLs → pegar `deploy/variables-vercel.env` en Vercel y desplegar → prueba de aceptación.
+Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En resumen: verificar el dominio en Resend → ejecutar `supabase/schema.sql` → configurar en Supabase las URLs → pegar `deploy/variables-vercel.env` en Vercel y desplegar → prueba de aceptación.
 
 ### Variables de entorno
 
@@ -62,6 +61,8 @@ Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En res
 
 | API | Quién | Acción |
 |---|---|---|
+| `POST /api/auth/signup` | Público | Registro; el correo de bienvenida (o de confirmación) sale por Resend |
+| `POST /api/auth/recover` | Público | «¿Olvidaste tu contraseña?»: el enlace sale por Resend |
 | `POST /api/checkout` | Cliente | Inicia el pago según el método |
 | `POST /api/claims` | Cliente | Solicita un retiro con sus datos de pago |
 | `POST /api/profile` | Cliente | Actualiza sus datos |
@@ -106,7 +107,6 @@ src/
 supabase/
   schema.sql                # Tablas, restricciones y RLS (re-ejecutable)
   config.toml               # Supabase local para desarrollo y pruebas
-  templates/                # Plantillas de correo de Supabase
 tests/
   unit/                     # Vitest
   e2e/                      # Playwright

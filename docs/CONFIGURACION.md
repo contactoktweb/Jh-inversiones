@@ -7,8 +7,6 @@ Guía técnica para dejar la plataforma funcionando en una cuenta nueva de **Sup
 | Archivo | Para qué |
 |---|---|
 | `supabase/schema.sql` | SQL a ejecutar en Supabase (tablas, seguridad RLS y ajustes iniciales) |
-| `supabase/templates/confirmation.html` | Plantilla del correo «Confirma tu cuenta» |
-| `supabase/templates/recovery.html` | Plantilla del correo «Restablece tu contraseña» |
 | `deploy/variables-vercel.env` | Variables de entorno listas para pegar en Vercel |
 | `docs/Manual-de-uso-JH-Inversiones.pdf` | Manual de uso para entregar al cliente |
 | `docs/pasarela-de-pagos.md` | Fase pendiente: conectar la pasarela con tarjeta |
@@ -19,11 +17,11 @@ Guía técnica para dejar la plataforma funcionando en una cuenta nueva de **Sup
 
 ## 1. Resend
 
-Resend envía **todos** los correos: los de cuenta (confirmación y recuperación, vía SMTP desde Supabase) y los avisos de la plataforma (pagos y retiros, vía API).
+Resend envía **todos** los correos por su **API**: los de cuenta (bienvenida, confirmación opcional y recuperación de contraseña) y los avisos de la plataforma (pagos y retiros). **Supabase no envía ningún correo**: no hace falta configurar SMTP ni plantillas en Supabase.
 
 1. Crea la cuenta en [resend.com](https://resend.com).
 2. **Domains → Add Domain**: agrega el dominio del cliente (p. ej. `jhinversiones.com`) y crea en su DNS los registros que indica Resend (MX, SPF y DKIM). Espera a que diga **Verified**.
-3. **API Keys → Create API Key**, con permiso *Sending access*. Copia la clave (`re_…`): se usa dos veces, en Supabase (SMTP) y en Vercel.
+3. **API Keys → Create API Key**, con permiso *Sending access*. Copia la clave (`re_…`): va en Vercel (`RESEND_API_KEY`).
 4. Define el remitente, por ejemplo `avisos@jhinversiones.com` (debe pertenecer al dominio verificado).
 
 ### 1.1 Sin dominio todavía (modo de prueba)
@@ -36,16 +34,15 @@ Si aún no tienes un dominio verificado, puedes arrancar solo con la API key usa
 |---|---|
 | Avisos al administrador (nueva transferencia, nuevo retiro) | **Sí**, si `ADMIN_NOTIFICATION_EMAIL` es el email de tu cuenta de Resend |
 | Avisos al cliente (pago confirmado, retiro desembolsado…) | No (salvo que el cliente sea ese mismo email) |
-| Confirmación de registro y recuperación de contraseña (Supabase) | Solo para el email de tu cuenta de Resend |
+| Bienvenida al registrarse y recuperación de contraseña | Solo para el email de tu cuenta de Resend |
 
 Configuración en modo de prueba:
 
 - **Vercel:** `RESEND_FROM_EMAIL="JH Inversiones <onboarding@resend.dev>"` (ya viene así en `deploy/variables-vercel.env`) y `ADMIN_NOTIFICATION_EMAIL=` el email de tu cuenta de Resend.
-- **Supabase → SMTP** (sección 2.3): igual, pero con *Sender email* `onboarding@resend.dev`.
-- **Supabase → Sign In / Providers → Email:** **desactiva *Confirm email*** mientras no haya dominio. Así los clientes se registran y entran directo sin esperar un correo que no les va a llegar. (Con *Confirm email* desactivado la cuenta queda confirmada al registrarse, así que `ADMIN_EMAILS` funciona igual.)
-- *¿Olvidaste tu contraseña?* solo funcionará para el email de tu cuenta de Resend. Si un cliente la olvida, en Supabase → **Authentication → Users** → el usuario → **Send password recovery** tampoco le llegará: elimina el usuario y que se registre de nuevo, o espera a tener el dominio.
+- El registro funciona igual: el cliente entra directo a su panel (la bienvenida no le llega, pero no la necesita).
+- *¿Olvidaste tu contraseña?* solo funcionará para el email de tu cuenta de Resend. Si un cliente la olvida antes de que haya dominio: en Supabase → **Authentication → Users** elimina el usuario y que se registre de nuevo.
 
-**Cuando tengas el dominio:** verifícalo en Resend (paso 2), cambia `RESEND_FROM_EMAIL` en Vercel a `JH Inversiones <avisos@TU-DOMINIO.com>` y vuelve a desplegar, cambia el *Sender email* del SMTP en Supabase y vuelve a activar *Confirm email*. No hay que tocar el código.
+**Cuando tengas el dominio:** verifícalo en Resend (paso 2), cambia `RESEND_FROM_EMAIL` en Vercel a `JH Inversiones <avisos@TU-DOMINIO.com>` y vuelve a desplegar. Desde ese momento todos los correos llegan a todos. Si además quieres que el cliente confirme su correo antes de entrar, agrega `REQUIRE_EMAIL_CONFIRMATION=true`. No hay que tocar el código.
 
 ---
 
@@ -75,32 +72,10 @@ Configuración en modo de prueba:
 
 **Authentication → Sign In / Providers → Email**
 - *Enable Email provider*: activado.
-- **Confirm email: activado** (el cliente debe confirmar su correo antes de entrar).
 - *Minimum password length*: **8** (el formulario ya exige 8).
+- *Confirm email*: da igual cómo quede: las cuentas se crean desde el servidor de la plataforma y la confirmación la controla `REQUIRE_EMAIL_CONFIRMATION` en Vercel.
 
-**Authentication → Emails → SMTP Settings → Enable Custom SMTP** (con Resend)
-
-| Campo | Valor |
-|---|---|
-| Sender email | `avisos@jhinversiones.com` (del dominio verificado) |
-| Sender name | `JH Inversiones` |
-| Host | `smtp.resend.com` |
-| Port | `465` |
-| Username | `resend` |
-| Password | la API key de Resend (`re_…`) |
-
-> Sin SMTP propio, Supabase solo envía unos pocos correos por hora, lo que no basta para producción.
-
-**Authentication → Rate Limits:** sube *Rate limit for sending emails* a un valor acorde (por ejemplo 100 por hora).
-
-**Authentication → Emails → Templates**
-
-| Plantilla | Asunto | Contenido (Source) |
-|---|---|---|
-| **Confirm signup** | `Confirma tu cuenta en JH Inversiones` | todo `supabase/templates/confirmation.html` |
-| **Reset password** | `Restablece tu contraseña de JH Inversiones` | todo `supabase/templates/recovery.html` |
-
-Las plantillas usan `/auth/confirm?token_hash=…`, así que el enlace funciona aunque el cliente abra el correo en otro dispositivo. No cambies esa parte del enlace.
+**SMTP y plantillas de correo de Supabase: no se usan.** El registro y la recuperación de contraseña los hace la plataforma: Supabase solo genera el enlace seguro y el correo sale por la API de Resend, en español y con la marca. Los enlaces usan `/auth/confirm?token_hash=…`, así que funcionan aunque el cliente abra el correo en otro dispositivo.
 
 **Authentication → URL Configuration** (se completa en el paso 4, cuando ya conozcas el dominio)
 - *Site URL:* `https://TU-DOMINIO.com`
@@ -152,12 +127,12 @@ En **Database → Backups** revisa la política de respaldos del plan contratado
 Hazla en el dominio final, de principio a fin:
 
 - [ ] La página de inicio carga y el pie muestra el contacto.
-- [ ] **Registro** con un correo de prueba → llega «Confirma tu cuenta» desde `avisos@…` → el enlace lleva al panel.
+- [ ] **Registro** con un correo de prueba → entra directo a su panel y le llega «Bienvenido» desde `avisos@…` (con `REQUIRE_EMAIL_CONFIRMATION=true`: llega «Confirma tu cuenta» y el enlace lleva al panel).
 - [ ] **¿Olvidaste tu contraseña?** → llega el correo → permite crear una nueva.
 - [ ] Registro con el correo de `ADMIN_EMAILS` → al entrar va a **/admin** y aparece la ventana de la tasa diaria.
 - [ ] **Planes:** aparecen Impulso, Órbita y Horizonte; edita uno y comprueba el cambio en la página de inicio.
 - [ ] **Ajustes:** escribe los datos bancarios reales del cliente. «Correos de aviso» debe decir **Activos**.
-- [ ] Como cliente de prueba: invertir **por transferencia** → aparece la referencia `JH-…` con los datos bancarios → al administrador le llega «Nueva inversión pendiente de pago».
+- [ ] Como cliente de prueba: invertir **por transferencia** → aparece la referencia `JH-…` con los datos bancarios → pulsar **Ya realicé la transferencia** (con una foto) → al administrador le llega «Transferencia por verificar» con el comprobante adjunto.
 - [ ] En **Pagos**, confirmar esa transferencia → al cliente le llega «Pago confirmado» y su panel la muestra activa.
 - [ ] Invertir con **pago de prueba** → «Pago de prueba aceptado».
 - [ ] **Retiro:** para no esperar 30 días, en Supabase → SQL Editor:

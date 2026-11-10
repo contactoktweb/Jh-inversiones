@@ -200,7 +200,7 @@ Revisa la carpeta de spam. Igual puedes ver todo lo pendiente en **Pagos** y **R
 **Olvidé fijar la ganancia de un día.**
 Ese día se aplicó 1.5 %. Puedes corregirlo en **Ganancia diaria** con el lápiz ✏️.
 
-**Un cliente no recibe su correo de confirmación.**
+**Un cliente no recibe los correos de la plataforma.**
 Que revise su carpeta de spam y que confirme que escribió bien su correo.
 
 ---

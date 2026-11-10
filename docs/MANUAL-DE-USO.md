@@ -18,7 +18,7 @@ Cómo administrar la plataforma día a día: qué revisar cada día y cómo usar
 
 **El recorrido de un cliente:**
 
-1. Se **registra** con su correo y lo confirma desde el enlace que recibe.
+1. Se **registra** con su correo y una contraseña, y entra directo a su panel.
 2. Elige un **monto** (desde el mínimo, 50 USD al empezar) y un **método de pago**.
 3. Cuando el pago queda confirmado, su inversión pasa a **activa** y suma ganancias cada día.
 4. Cada día tú **fijas el porcentaje** de ganancia (o se aplica 1.5 %).
@@ -367,9 +367,11 @@ Cada día la inversión gana **capital × porcentaje de ese día** (interés sim
 
 ## 17. Correos automáticos
 
+Todos los correos salen desde la dirección de la plataforma (Resend), en español.
+
 | Cuándo | Quién lo recibe |
 |---|---|
-| Alguien se registra | El cliente: «Confirma tu cuenta» |
+| Alguien se registra | El cliente: «Bienvenido» |
 | Alguien pide cambiar su contraseña | El cliente: «Restablece tu contraseña» |
 | Un cliente avisa que ya hizo su transferencia (con el comprobante adjunto si lo subió) | Tú |
 | Un cliente solicita un retiro (con sus datos de pago) | Tú |
@@ -403,7 +405,7 @@ Rechaza la inversión pendiente (motivo: «monto distinto») y registra un **pag
 **Un cliente me pagó en efectivo.**
 Pídele que se registre y usa *Pagos → Registrar un pago manual*.
 
-**Un cliente no recibe el correo de confirmación.**
+**Un cliente no recibe los correos de la plataforma.**
 Que revise la carpeta de spam o correo no deseado y que confirme que escribió bien su correo. Si sigue sin llegar, contacta a tu soporte técnico.
 
 **Un cliente olvidó su contraseña.**

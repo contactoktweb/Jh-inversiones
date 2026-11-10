@@ -25,7 +25,6 @@ else
 fi
 echo "▶ Claves de Supabase: ${SUPABASE_KEYS:-new} (${NEXT_PUBLIC_SUPABASE_ANON_KEY:0:16}…)"
 export E2E_DB_URL="$SB_DB_URL"
-export E2E_MAILPIT_URL="${SB_MAILPIT_URL:-${SB_INBUCKET_URL:-http://127.0.0.1:54324}}"
 export NEXT_PUBLIC_SITE_URL="http://localhost:3123"
 export ADMIN_EMAILS="admin@e2e.test"
 export NEXT_PUBLIC_PAYMENT_METHODS="test,transfer"

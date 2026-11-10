@@ -1,8 +1,33 @@
 import { expect, test } from "@playwright/test";
-import { createUser, lastEmailLink, login, PASSWORD } from "./helpers";
+import { createUser, emailsTo, lastEmailLink, login, PASSWORD } from "./helpers";
 
 test.describe("Cuentas de usuario", () => {
-  test("registro con confirmación por correo (abriendo el enlace en otro dispositivo)", async ({ page, browser }) => {
+  test("registro: entra directo a su panel y recibe la bienvenida por Resend", async ({ page }) => {
+    test.skip(process.env.REQUIRE_EMAIL_CONFIRMATION === "true", "modo con confirmación por correo");
+    const email = `registro-${Date.now()}@e2e.test`;
+    await page.goto("/acceso");
+    await page.getByRole("button", { name: "¿No tienes cuenta? Regístrate" }).click();
+    await page.fill("#email", email);
+    await page.fill("#password", PASSWORD);
+    await page.click("button.auth-submit");
+    await page.waitForURL("**/dashboard");
+    await expect(page.getByRole("heading", { name: /Hola/ })).toBeVisible();
+    const { subject, link } = await lastEmailLink(email);
+    expect(subject).toBe("JH Inversiones · Bienvenido");
+    expect(link).toMatch(/\/dashboard$/);
+
+    // El mismo correo no se puede registrar dos veces.
+    const other = await (await page.context().browser()!.newContext()).newPage();
+    await other.goto("/acceso");
+    await other.getByRole("button", { name: "¿No tienes cuenta? Regístrate" }).click();
+    await other.fill("#email", email);
+    await other.fill("#password", PASSWORD);
+    await other.click("button.auth-submit");
+    await expect(other.getByText("Ya existe una cuenta con este correo")).toBeVisible();
+  });
+
+  test("registro con confirmación por correo (REQUIRE_EMAIL_CONFIRMATION=true, enlace en otro dispositivo)", async ({ page, browser }) => {
+    test.skip(process.env.REQUIRE_EMAIL_CONFIRMATION !== "true", "solo con confirmación por correo");
     const email = `registro-${Date.now()}@e2e.test`;
     await page.goto("/acceso");
     await page.getByRole("button", { name: "¿No tienes cuenta? Regístrate" }).click();
@@ -17,7 +42,7 @@ test.describe("Cuentas de usuario", () => {
     await expect(page.getByText("Confirma tu correo antes de iniciar sesión.")).toBeVisible();
 
     const { subject, link } = await lastEmailLink(email);
-    expect(subject).toContain("Confirma");
+    expect(subject).toBe("JH Inversiones · Confirma tu cuenta");
     const other = await (await browser.newContext()).newPage();
     await other.goto(link);
     await other.waitForURL("**/dashboard");
@@ -42,8 +67,16 @@ test.describe("Cuentas de usuario", () => {
     await page.fill("#email", email);
     await page.click("button.auth-submit");
     await expect(page.getByText("te enviamos un enlace")).toBeVisible();
+    // Un correo no registrado recibe la misma respuesta, sin enviar nada.
+    const nobody = `nadie-${Date.now()}@e2e.test`;
+    await page.fill("#email", nobody);
+    await page.click("button.auth-submit");
+    await expect(page.getByText("te enviamos un enlace")).toBeVisible();
+    await page.waitForTimeout(500);
+    expect(await emailsTo(nobody)).toHaveLength(0);
 
-    const { link } = await lastEmailLink(email);
+    const { subject, link } = await lastEmailLink(email);
+    expect(subject).toBe("JH Inversiones · Restablece tu contraseña");
     const other = await (await browser.newContext()).newPage();
     await other.goto(link);
     await other.waitForURL("**/restablecer");
