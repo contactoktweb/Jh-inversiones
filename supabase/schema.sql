@@ -92,6 +92,9 @@ alter table public.investments add column if not exists confirmed_at timestamptz
 alter table public.investments add column if not exists confirmed_by uuid references auth.users(id) on delete set null;
 alter table public.investments add column if not exists cancelled_at timestamptz;
 alter table public.investments add column if not exists admin_note text;
+-- Transferencias: el cliente avisa que ya pagó (fecha y n.º de operación o comentario).
+alter table public.investments add column if not exists payment_reported_at timestamptz;
+alter table public.investments add column if not exists payment_report_note text;
 -- Versiones anteriores limitaban plan_id a 3 valores fijos; ahora apunta a la tabla de planes.
 alter table public.investments drop constraint if exists investments_plan_id_check;
 do $$ begin
@@ -100,6 +103,15 @@ do $$ begin
       foreign key (plan_id) references public.plans(id) on update cascade on delete restrict;
   end if;
 end $$;
+
+-- Foto del comprobante que adjunta el cliente al avisar su transferencia (imagen comprimida).
+-- Solo la lee el servidor (service role): sin políticas para las cuentas.
+create table if not exists public.payment_proofs (
+  investment_id uuid primary key references public.investments(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  image text not null check (char_length(image) <= 1500000),
+  created_at timestamptz not null default now()
+);
 
 -- ───────────────────────── Tasas diarias ─────────────────────────
 -- Días sin registro usan la tasa por defecto (1.5 %, ver src/lib/rates.ts).
@@ -171,6 +183,7 @@ alter table public.claims enable row level security;
 alter table public.settings enable row level security;
 alter table public.admin_audit enable row level security;
 alter table public.plans enable row level security;
+alter table public.payment_proofs enable row level security;
 
 drop policy if exists "profiles_select_own" on public.profiles;
 create policy "profiles_select_own" on public.profiles for select
@@ -191,4 +204,4 @@ create policy "settings_select_authenticated" on public.settings for select
 drop policy if exists "plans_select_all" on public.plans;
 create policy "plans_select_all" on public.plans for select
   to anon, authenticated using (true);
--- admin_audit: sin políticas → solo accesible con la service role key.
+-- admin_audit y payment_proofs: sin políticas → solo accesibles con la service role key.

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-type Sent = { from: string; to: string | string[]; subject: string; html: string; auth: string };
+type Sent = { from: string; to: string | string[]; subject: string; html: string; auth: string; attachments?: { filename: string; content: string }[] };
 const sent = async (): Promise<Sent[]> => (await fetch("http://127.0.0.1:4010/__sent")).json();
 const to = (e: Sent) => (Array.isArray(e.to) ? e.to : [e.to]);
 
@@ -11,7 +11,7 @@ test.describe("Correos con Resend", () => {
     const subjects = emails.map(e => e.subject);
     const admin = process.env.ADMIN_NOTIFICATION_EMAIL!;
     const expectations: Array<[RegExp, "admin" | "cliente"]> = [
-      [/Nueva inversión pendiente de pago$/, "admin"],
+      [/Transferencia por verificar: \$100\.00$/, "admin"],
       [/Solicitud de retiro por \$/, "admin"],
       [/Pago confirmado$/, "cliente"],
       [/Pago no confirmado$/, "cliente"],
@@ -32,6 +32,17 @@ test.describe("Correos con Resend", () => {
     const desembolso = emails.find(e => /Retiro desembolsado$/.test(e.subject))!;
     expect(desembolso.html).toContain("TRX-999");
     expect(desembolso.html).toContain("/dashboard");
+    // El aviso de transferencia lleva el comprobante adjunto y el comentario del cliente.
+    const aviso = emails.find(e => /Transferencia por verificar: \$100\.00$/.test(e.subject))!;
+    expect(aviso.html).toContain("Operación 555-AB");
+    expect(aviso.html).toContain("/admin/pagos");
+    expect(aviso.attachments?.[0]?.filename).toMatch(/^comprobante-JH-[A-Z0-9]{6}\.jpg$/);
+    expect(Buffer.from(aviso.attachments![0].content, "base64").subarray(0, 3).toString("hex")).toBe("ffd8ff");
+    const sinComprobante = emails.find(e => /Transferencia por verificar: \$75\.00$/.test(e.subject))!;
+    expect(sinComprobante.html).toContain("no adjuntó comprobante");
+    expect(sinComprobante.attachments ?? []).toEqual([]);
+    // Registrar una transferencia ya no avisa: solo cuando el cliente confirma que pagó.
+    expect(subjects.some(s => /Nueva inversión pendiente de pago/.test(s))).toBe(false);
     const retiro = emails.find(e => /Solicitud de retiro por/.test(e.subject))!;
     expect(retiro.html).toContain("Banco Uno");
     expect(retiro.html).toContain("/admin/retiros");

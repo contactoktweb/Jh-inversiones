@@ -10,18 +10,18 @@ import { minInvestment } from "@/lib/plans";
 import { getPlans } from "@/lib/server/plans";
 import { requireAdminPage } from "@/lib/server/admin-page";
 import { emailEnabled } from "@/lib/server/notify";
-import { getSetting } from "@/lib/server/session";
+import { getSetting, getTransferImageUrl } from "@/lib/server/session";
 
 export const metadata: Metadata = { title: "Ajustes · Administración", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
   const { session, badges } = await requireAdminPage("/admin/ajustes");
-  const [transfer, plans] = await Promise.all([getSetting("transfer_instructions"), getPlans()]);
+  const [transfer, transferImage, plans] = await Promise.all([getSetting("transfer_instructions"), getTransferImageUrl(), getPlans()]);
   const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim()).filter(Boolean);
   return <AdminShell email={session.email} badges={badges} eyebrow="AJUSTES" title="Ajustes." subtitle="Datos de pago y configuración actual de la plataforma.">
     <div className="dash-body-grid">
-      <section className="dash-panel"><div className="panel-heading"><h2>Datos para transferencias</h2></div><TransferSettings initial={transfer} /></section>
+      <section className="dash-panel"><div className="panel-heading"><h2>Datos para transferencias</h2></div><TransferSettings initial={transfer} initialImage={transferImage} /></section>
       <section className="dash-panel"><div className="panel-heading"><h2>Configuración actual</h2><span>Solo lectura</span></div>
         <ul className="info-list">
           <li><span>Métodos de pago activos</span><strong>{paymentMethods.map(m => PAYMENT_METHOD_LABELS[m]).join(", ")}</strong></li>

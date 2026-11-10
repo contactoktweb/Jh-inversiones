@@ -3,7 +3,7 @@
 Plataforma de inversión en dólares con panel de cliente y panel de administración completos.
 
 - Inversión desde **50 USD**, plazo mínimo de **30 días**, ganancia **diaria** fijada por el administrador (**1.5 %** por defecto).
-- Pagos por **transferencia bancaria** (el administrador los confirma), **registro manual** y **pago de prueba**. La **pasarela con tarjeta** es la fase pendiente.
+- Pagos por **transferencia bancaria**: el cliente ve la foto y los datos de pago, avisa «Ya realicé la transferencia» con comprobante opcional, al administrador le llega un correo con el comprobante adjunto y aprueba el pago; **registro manual** y **pago de prueba**. La **pasarela con tarjeta** es la fase pendiente.
 - Retiros con datos de pago del cliente, aprobación, desembolso con comprobante o rechazo con motivo.
 - **Planes editables** por el administrador (crear, editar montos y beneficios, ordenar, ocultar, eliminar sin uso).
 - Gestión de clientes (suspender, roles), registro de actividad (auditoría) y exportación a CSV.
@@ -50,13 +50,13 @@ Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En res
 |---|---|
 | `/admin` | Resumen, alertas, tasa del día, vencimientos de la semana, actividad reciente |
 | `/admin/tasas` | Tasa diaria y historial editable de 60 días |
-| `/admin/pagos` | Confirmar o rechazar transferencias, registrar pagos manuales, historial |
+| `/admin/pagos` | Transferencias avisadas por el cliente (con comprobante), confirmar o rechazar, pagos manuales, historial |
 | `/admin/retiros` | Aprobar, marcar como desembolsado (con comprobante) o rechazar (con motivo) |
 | `/admin/inversiones` | Todas las inversiones, filtros y cancelación |
 | `/admin/planes` | Crear, editar, ordenar, ocultar o eliminar planes (la web y el mínimo se actualizan solos) |
 | `/admin/clientes` y `/admin/clientes/[id]` | Lista y ficha del cliente; suspender, reactivar y roles |
 | `/admin/actividad` | Registro de auditoría |
-| `/admin/ajustes` | Datos de transferencia, configuración actual y exportaciones CSV |
+| `/admin/ajustes` | Foto y texto con los datos de pago, configuración actual y exportaciones CSV |
 
 **APIs** (todas validan el origen y la sesión, y escriben con la service role):
 
@@ -67,6 +67,9 @@ Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En res
 | `POST /api/profile` | Cliente | Actualiza sus datos |
 | `POST /api/admin/rates` | Admin | Fija la tasa de un día |
 | `POST /api/admin/payments` | Admin | Confirma o rechaza una transferencia |
+| `GET /api/admin/payments/proof?id=` | Admin | Foto del comprobante que envió el cliente |
+| `POST /api/payments/report` | Cliente | «Ya realicé la transferencia» (+ comprobante opcional): avisa al administrador por correo |
+| `GET /api/transfer-image` | Con sesión | Foto con los datos de pago subida en Ajustes |
 | `POST /api/admin/investments` | Admin | Registra una inversión manual o cancela una inversión |
 | `POST /api/admin/claims` | Admin | Aprueba, desembolsa o rechaza un retiro |
 | `POST /api/admin/users` | Admin | Suspende, reactiva o cambia el rol de una cuenta |
@@ -119,7 +122,8 @@ docs/                       # Manual del dueño y guía de la pasarela
 | `investments` | Monto, plan, fechas, `payment_method` (`test`, `transfer`, `manual`, `stripe`), referencia única, estado (`pending_payment`, `active`, `closed`, `cancelled`) |
 | `daily_rates` | Tasa por día (`AAAA-MM-DD`, hora de Bogotá) |
 | `claims` | Retiros: monto congelado, datos de pago, estado, comprobante y nota |
-| `settings` | Ajustes editables (instrucciones de transferencia) |
+| `settings` | Ajustes editables (texto y foto con los datos de pago) |
+| `payment_proofs` | Comprobantes de transferencia enviados por los clientes (solo service role) |
 | `admin_audit` | Registro de acciones administrativas |
 
 **RLS:** los clientes solo pueden **leer** sus propias filas (y las tasas y ajustes). Ninguna tabla admite escrituras desde el navegador: todo pasa por las APIs del servidor con la service role. `admin_audit` no es legible desde el cliente.

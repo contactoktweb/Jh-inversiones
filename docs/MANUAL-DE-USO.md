@@ -42,7 +42,7 @@ Estos son los planes con los que arranca la plataforma.
 Antes de recibir a tus primeros clientes:
 
 1. **Entra al panel** con tu correo de administrador (sección 3).
-2. Ve a **Ajustes** y escribe los **datos de tu cuenta bancaria**. Es lo que verán los clientes que paguen por transferencia (sección 12).
+2. Ve a **Ajustes**, sube una **foto con tus datos de pago** (por ejemplo, el QR de tu banco) y escribe los **datos de tu cuenta bancaria**. Es lo que verán los clientes que paguen por transferencia (sección 12).
 3. **Fija la ganancia del día** en la ventana que aparece al entrar (sección 5).
 4. Si quieres, haz una inversión de prueba con otra cuenta para ver el recorrido completo como cliente.
 
@@ -51,11 +51,11 @@ Antes de recibir a tus primeros clientes:
 ## 3. Entrar al panel
 
 1. Ve a la página de la plataforma y pulsa **Iniciar sesión**.
-2. Elige la pestaña **Administrador**, escribe tu correo y tu contraseña y pulsa **Iniciar sesión**.
+2. Escribe tu correo y tu contraseña y pulsa **Iniciar sesión**. No hay que elegir nada más: la plataforma reconoce que tu cuenta es de administrador y te lleva directo al panel de administración. Los clientes, con la misma pantalla, entran a su propio panel.
 
 ![Inicio de sesión](manual/img/01-acceso.png)
 
-**La primera vez:** pulsa **¿No tienes cuenta? Regístrate** con tu correo de administrador, confírmalo desde el correo que te llega y luego inicia sesión. Entrarás directo al panel de administración.
+**La primera vez:** pulsa **¿No tienes cuenta? Regístrate** con tu correo de administrador y crea tu contraseña. Entrarás directo al panel de administración.
 
 - **¿Olvidaste tu contraseña?** Te llega un enlace por correo para crear una nueva.
 - **Cerrar sesión:** icono de salida, abajo en el menú lateral.
@@ -70,12 +70,12 @@ Antes de recibir a tus primeros clientes:
 | Cuándo | Qué hacer | Dónde |
 |---|---|---|
 | Cada día | Fijar el porcentaje de ganancia del día | **Ganancia diaria** (o la ventana que aparece al entrar) |
-| Cada día | Confirmar las transferencias recibidas | **Pagos → Transferencias por confirmar** |
+| Cada día | Verificar las transferencias que los clientes avisaron y confirmarlas | **Pagos → Transferencias por confirmar** |
 | Cada día | Revisar y pagar los retiros pendientes | **Retiros → Por resolver** |
 | Cada semana | Ver qué inversiones cumplen el mes, para tener el dinero listo | **Resumen → Cumplen el mes esta semana** |
 | Cada mes | Descargar los reportes para tu contabilidad | **Ajustes → Exportar datos** |
 
-El menú lateral muestra **números rojos** en *Pagos* y *Retiros* cuando hay algo pendiente. El panel se actualiza solo cada 30 segundos. Además, te llega un **correo** cada vez que un cliente registra una transferencia o solicita un retiro.
+El menú lateral muestra **números rojos** en *Pagos* y *Retiros* cuando hay algo pendiente. El panel se actualiza solo cada 30 segundos. Además, te llega un **correo** cada vez que un cliente avisa que ya hizo su transferencia (con la foto del comprobante adjunta, si la subió) o solicita un retiro.
 
 ---
 
@@ -125,10 +125,16 @@ Es la página de inicio del panel. Reúne lo que debes revisar hoy.
 
 ### Transferencias por confirmar
 
-Cuando un cliente elige **Transferencia bancaria**, la plataforma le muestra tus datos bancarios y un **código de referencia** (por ejemplo `JH-7KQ2MD`) que debe escribir en la descripción de su transferencia. La inversión queda en **Pago pendiente** y no gana nada hasta que la confirmes.
+Así funciona el pago por transferencia:
 
-1. Revisa tu banco y busca la transferencia con ese código y ese monto.
-2. Pulsa **Confirmar pago** → **Sí, confirmar pago**.
+1. El cliente elige el monto y **Transferencia bancaria**. La plataforma le muestra tu **foto con los datos de pago**, tus datos bancarios y un **código de referencia** (por ejemplo `JH-7KQ2MD`) que debe escribir en la descripción de su transferencia. La inversión queda en **Pago pendiente** y no gana nada todavía.
+2. El cliente hace la transferencia y pulsa **«Ya realicé la transferencia»**. Puede añadir el n.º de operación y una **foto del comprobante**.
+3. **Te llega un correo** «Transferencia por verificar» con el cliente, el monto, la referencia y el comprobante adjunto. En *Pagos* esa fila aparece como **AVISÓ QUE PAGÓ** (las que aún no avisan dicen *AÚN NO AVISA*).
+4. Pulsa **Ver comprobante** para ver la foto que envió el cliente.
+
+![Comprobante del cliente](manual/img/16-comprobante.png)
+
+5. Revisa tu banco y busca la transferencia con ese código y ese monto. Si llegó, pulsa **Confirmar pago** → **Sí, confirmar pago**.
 
 ![Confirmar pago](manual/img/06-confirmar-pago.png)
 
@@ -262,7 +268,11 @@ No puedes suspenderte ni quitarte el rol a ti mismo.
 
 ![Ajustes](manual/img/13-ajustes.png)
 
-- **Datos para transferencias:** el texto que ve el cliente al elegir *Transferencia bancaria* (banco, tipo y número de cuenta, titular, NIT…). Puedes cambiarlo cuando quieras con **Guardar**.
+- **Datos para transferencias:** lo que ve el cliente al elegir *Transferencia bancaria*:
+  - **Foto con los datos de pago:** pulsa **Subir foto** y elige una imagen (el QR de tu banco o una captura con los datos de la cuenta). Puedes cambiarla o quitarla cuando quieras.
+  - **Texto:** banco, tipo y número de cuenta, titular, RUC o documento…
+
+  Pulsa **Guardar** para que los clientes vean los cambios.
 - **Configuración actual:** información de consulta (métodos de pago activos, correos de aviso, reglas de inversión). Si necesitas cambiar algo de esta lista, pídeselo a tu soporte técnico.
 - **Exportar datos:** descarga archivos de **inversiones, retiros, clientes y actividad**, que se abren con Excel o Google Sheets.
 
@@ -280,7 +290,7 @@ Registra **todas las acciones** hechas en el panel: quién las hizo, cuándo y c
 
 Conocer su recorrido te ayuda a darle soporte.
 
-**Su panel:** capital, ganancias, ganancia de hoy, gráfico de 30 días, avance del plazo mínimo, pagos pendientes (con tus datos bancarios y su referencia), solicitudes de retiro y todas sus inversiones.
+**Su panel:** capital, ganancias, ganancia de hoy, gráfico de 30 días, avance del plazo mínimo, pagos pendientes (con tus datos de pago, su referencia y el botón para avisar que ya transfirió), solicitudes de retiro y todas sus inversiones.
 
 ![Panel del cliente](manual/img/20-panel-cliente.png)
 
@@ -288,9 +298,17 @@ Conocer su recorrido te ayuda a darle soporte.
 
 ![Invertir](manual/img/21-invertir.png)
 
-Si elige **transferencia**, ve tus datos bancarios y su **referencia**, con un botón para copiarla:
+Si elige **transferencia**, ve tu foto con los datos de pago, tus datos bancarios y su **referencia**, con un botón para copiarla:
 
 ![Transferencia registrada](manual/img/22-transferencia-registrada.png)
+
+Cuando ya transfirió, escribe el n.º de operación, sube la foto del comprobante (opcional) y pulsa **Ya realicé la transferencia**:
+
+![Aviso de transferencia](manual/img/25-aviso-transferencia.png)
+
+La plataforma le confirma que la administración fue avisada. En su panel, el pago pasa a **EN VERIFICACIÓN** hasta que lo confirmes. Si cierra la página antes de avisar, puede hacerlo después desde su panel.
+
+![Aviso enviado](manual/img/26-aviso-enviado.png)
 
 **Mi cuenta:** nombre, teléfono, país, **dónde recibir los retiros** y cambio de contraseña. Al pedir un retiro, sus datos de pago se rellenan solos desde aquí.
 
@@ -328,7 +346,8 @@ Cada día la inversión gana **capital × porcentaje de ese día** (interés sim
 
 | Estado | Significado |
 |---|---|
-| Pago pendiente | Registrada por transferencia, esperando tu confirmación. No gana nada. |
+| Pago pendiente | Registrada por transferencia; el cliente aún no avisa que pagó. No gana nada. |
+| Pago pendiente · avisó que pagó (cliente: *En verificación*) | El cliente avisó su transferencia; revisa tu banco y confírmala o recházala. No gana nada todavía. |
 | Activa | Pago confirmado; gana cada día. |
 | Cerrada | Retiro desembolsado. |
 | Cancelada | Pago rechazado o inversión anulada. No gana nada. |
@@ -352,7 +371,7 @@ Cada día la inversión gana **capital × porcentaje de ese día** (interés sim
 |---|---|
 | Alguien se registra | El cliente: «Confirma tu cuenta» |
 | Alguien pide cambiar su contraseña | El cliente: «Restablece tu contraseña» |
-| Un cliente registra una inversión por transferencia | Tú |
+| Un cliente avisa que ya hizo su transferencia (con el comprobante adjunto si lo subió) | Tú |
 | Un cliente solicita un retiro (con sus datos de pago) | Tú |
 | Confirmas o rechazas un pago | El cliente |
 | Registras una inversión manual | El cliente |
@@ -364,7 +383,7 @@ Cada día la inversión gana **capital × porcentaje de ese día** (interés sim
 
 | Método | Cómo funciona |
 |---|---|
-| **Transferencia bancaria** | El cliente transfiere a tu cuenta con su referencia y tú confirmas el pago en *Pagos* |
+| **Transferencia bancaria** | El cliente transfiere a tu cuenta con su referencia, avisa con **«Ya realicé la transferencia»** y tú confirmas el pago en *Pagos* |
 | **Registro manual** | Tú registras un pago recibido por fuera de la plataforma |
 | **Pago de prueba** | Se acepta al instante y muestra «Pago de prueba aceptado». **No cobra dinero**: sirve para probar la plataforma |
 | **Tarjeta de crédito o débito** | Próxima fase: se habilitará cuando se conecte la pasarela de pagos |

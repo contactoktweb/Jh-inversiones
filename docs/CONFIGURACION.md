@@ -57,7 +57,7 @@ Configuración en modo de prueba:
 2. **SQL Editor → New query** → pega **todo** `supabase/schema.sql` → **Run**. Debe terminar con *Success. No rows returned*.
    - Crea: `profiles`, `plans`, `investments`, `daily_rates`, `claims`, `settings` y `admin_audit`, con sus restricciones e índices, la RLS y el disparador que crea el perfil al registrarse. Deja cargados los 3 planes iniciales (Impulso 50, Órbita 500, Horizonte 2.000 USD), que luego el administrador edita en **Planes**.
    - Es re-ejecutable: si más adelante hay una versión nueva, se vuelve a pegar y ejecutar sin perder datos.
-3. Comprueba en **Table Editor** que aparecen las 7 tablas.
+3. Comprueba en **Table Editor** que aparecen las 8 tablas (incluida `payment_proofs`, donde se guardan los comprobantes).
 
 ### 2.2 Claves (para Vercel)
 
@@ -124,7 +124,7 @@ En **Database → Backups** revisa la política de respaldos del plan contratado
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Sí | Publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Sí | Secret key (**secreta**) |
 | `ADMIN_EMAILS` | Sí | Correo(s) del cliente administrador, separados por comas |
-| `NEXT_PUBLIC_PAYMENT_METHODS` | Sí | `test,transfer` para la entrega y las pruebas; `transfer` para operar con dinero real |
+| `NEXT_PUBLIC_PAYMENT_METHODS` | Sí | `transfer` para operar con dinero real (valor del archivo de Vercel); `test,transfer` solo para probar sin dinero |
 | `RESEND_API_KEY` | Sí | `re_…` |
 | `RESEND_FROM_EMAIL` | Sí | `JH Inversiones <avisos@TU-DOMINIO.com>`; sin dominio: `JH Inversiones <onboarding@resend.dev>` (sección 1.1). Si la escribes a mano en el campo de Vercel, sin comillas |
 | `ADMIN_NOTIFICATION_EMAIL` | Sí | Bandeja que recibe los avisos de pagos y retiros (sin dominio: el email de tu cuenta de Resend) |

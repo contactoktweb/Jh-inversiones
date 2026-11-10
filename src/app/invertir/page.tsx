@@ -5,7 +5,7 @@ import { paymentMethods } from "@/lib/config";
 import { MAX_INVESTMENT_USD, rateFor, todayKey } from "@/lib/rates";
 import { minInvestment } from "@/lib/plans";
 import { getPlans } from "@/lib/server/plans";
-import { getRates, getSession, getSetting } from "@/lib/server/session";
+import { getRates, getSession, getSetting, getTransferImageUrl } from "@/lib/server/session";
 
 export const metadata: Metadata = { title: "Invertir", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -20,6 +20,7 @@ export default async function InvestPage({ searchParams }: { searchParams: Promi
   if (!session) redirect(`/acceso?next=${encodeURIComponent(`/invertir?monto=${amount}`)}`);
   if (session.role === "admin") redirect("/admin");
   if (session.status === "suspended") redirect("/dashboard");
-  const [rates, transferInstructions] = await Promise.all([getRates(), paymentMethods.includes("transfer") ? getSetting("transfer_instructions") : Promise.resolve("")]);
-  return <InvestCheckout initialAmount={amount} email={session.email} todayRate={rateFor(rates, todayKey())} methods={paymentMethods} transferInstructions={transferInstructions} plans={plans} />;
+  const transfer = paymentMethods.includes("transfer");
+  const [rates, transferInstructions, transferImage] = await Promise.all([getRates(), transfer ? getSetting("transfer_instructions") : "", transfer ? getTransferImageUrl() : ""]);
+  return <InvestCheckout initialAmount={amount} email={session.email} todayRate={rateFor(rates, todayKey())} methods={paymentMethods} transferInstructions={transferInstructions} transferImage={transferImage} plans={plans} />;
 }

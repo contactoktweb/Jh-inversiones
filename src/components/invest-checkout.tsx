@@ -5,19 +5,20 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Building2, CalendarDays, CircleCheck, Clock3, Copy, CreditCard, FlaskConical, LoaderCircle, LockKeyhole, Percent, ShieldCheck, Wallet } from "lucide-react";
 import Logo from "./logo";
+import ReportPayment from "./report-payment";
 import { formatDate, formatUsd } from "@/lib/finance";
 import { activePlans, minInvestment, planForAmount, type Plan } from "@/lib/plans";
 import { MAX_INVESTMENT_USD, MIN_TERM_DAYS } from "@/lib/rates";
 import type { PaymentMethod } from "@/lib/config";
 
-type Receipt = { status: "accepted" | "pending"; reference: string; amountUsd: number; planName: string };
+type Receipt = { status: "accepted" | "pending"; investmentId: string; reference: string; amountUsd: number; planName: string };
 const METHOD_INFO: Record<PaymentMethod, { label: string; help: string; icon: typeof CreditCard }> = {
   test: { label: "Pago de prueba", help: "Se acepta al instante. No se realiza ningún cobro real.", icon: FlaskConical },
-  transfer: { label: "Transferencia bancaria", help: "Transfiere el monto y la administración activará tu inversión al recibirlo.", icon: Building2 },
+  transfer: { label: "Transferencia bancaria", help: "Te mostramos los datos de pago; cuando transfieras, nos avisas y la administración activa tu inversión.", icon: Building2 },
   stripe: { label: "Tarjeta de crédito o débito", help: "Pago seguro con la pasarela de pagos.", icon: CreditCard },
 };
 
-export default function InvestCheckout({ initialAmount, email, todayRate, methods, transferInstructions, plans }: {initialAmount:number;email:string;todayRate:number;methods:PaymentMethod[];transferInstructions:string;plans:Plan[]}) {
+export default function InvestCheckout({ initialAmount, email, todayRate, methods, transferInstructions, transferImage, plans }: {initialAmount:number;email:string;todayRate:number;methods:PaymentMethod[];transferInstructions:string;transferImage:string;plans:Plan[]}) {
   const MIN_INVESTMENT_USD=minInvestment(plans);
   const presets=[...new Set([...activePlans(plans).map(p=>p.minUsd),MIN_INVESTMENT_USD*2,1000])].filter(v=>v>=MIN_INVESTMENT_USD&&v<=MAX_INVESTMENT_USD).sort((a,b)=>a-b).slice(0,6);
   const router=useRouter();
@@ -46,7 +47,7 @@ export default function InvestCheckout({ initialAmount, email, todayRate, method
       if(res.status===401){router.push(`/acceso?next=${encodeURIComponent(`/invertir?monto=${value}`)}`);return;}
       if(!res.ok)throw new Error(data.error||"No pudimos procesar el pago.");
       if(data.status==="redirect"&&data.url){window.location.assign(data.url);return;}
-      setReceipt({status:data.status,reference:data.reference,amountUsd:data.amountUsd,planName:data.planName});
+      setReceipt({status:data.status,investmentId:data.investmentId,reference:data.reference,amountUsd:data.amountUsd,planName:data.planName});
     }catch(err){setError(err instanceof Error?err.message:"Ocurrió un error.");}
     finally{setBusy(false)}
   }
@@ -69,11 +70,12 @@ export default function InvestCheckout({ initialAmount, email, todayRate, method
         <motion.section key="pending" className="invest-card invest-success invest-pending" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}}>
           <div className="invest-success-icon pending"><Clock3 size={40}/></div>
           <h1>Inversión registrada</h1>
-          <p>Tu inversión de <strong>{formatUsd(receipt.amountUsd)}</strong> quedó <strong>pendiente de pago</strong>. Haz la transferencia con estos datos y escribe la referencia en la descripción.</p>
+          <p>Tu inversión de <strong>{formatUsd(receipt.amountUsd)}</strong> en el plan <strong>{receipt.planName}</strong> quedó <strong>pendiente de pago</strong>. Haz la transferencia con estos datos y escribe la referencia en la descripción.</p>
           <div className="invest-reference"><span>Referencia de pago</span><strong>{receipt.reference}</strong><button type="button" onClick={()=>copy(receipt.reference)}><Copy size={14}/> {copied?"Copiada":"Copiar"}</button></div>
-          <div className="invest-instructions"><strong>Datos para la transferencia</strong><p>{transferInstructions||"La administración te enviará los datos de pago."}</p><p>Monto exacto: <strong>{formatUsd(receipt.amountUsd)}</strong></p></div>
-          <p className="invest-note">Cuando la administración confirme el pago, tu inversión se activa y empieza a sumar ganancias desde ese día. Puedes ver el estado en tu panel.</p>
-          <Link className="invest-pay" href="/dashboard">Ir a mi panel <ArrowRight size={18}/></Link>
+          <TransferDetails instructions={transferInstructions} image={transferImage} amountUsd={receipt.amountUsd}/>
+          <ReportPayment investmentId={receipt.investmentId}/>
+          <p className="invest-note">Cuando la administración confirme el pago, tu inversión se activa y empieza a sumar ganancias desde ese día. Si transfieres más tarde, puedes avisar desde tu panel.</p>
+          <Link className="invest-secondary" href="/dashboard">Ir a mi panel <ArrowRight size={16}/></Link>
         </motion.section>:
         <motion.form key="form" onSubmit={pay} className="invest-card" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-10}}>
           <Link href="/#planes" className="invest-back"><ArrowLeft size={16}/> Ver planes</Link>
@@ -98,5 +100,14 @@ export default function InvestCheckout({ initialAmount, email, todayRate, method
         </motion.form>}
       </AnimatePresence>
     </main>
+  </div>;
+}
+
+/** Datos de pago que configura el administrador en Ajustes: foto (p. ej. QR o captura de la cuenta) y texto. */
+export function TransferDetails({ instructions, image, amountUsd }: { instructions: string; image: string; amountUsd?: number }) {
+  return <div className="invest-instructions"><strong>Datos para la transferencia</strong>
+    {image&&<a href={image} target="_blank" rel="noreferrer" className="transfer-image"><img src={image} alt="Datos de la cuenta para la transferencia"/></a>}
+    {(instructions||!image)&&<p>{instructions||"La administración te enviará los datos de pago."}</p>}
+    {amountUsd!==undefined&&<p>Monto exacto: <strong>{formatUsd(amountUsd)}</strong></p>}
   </div>;
 }

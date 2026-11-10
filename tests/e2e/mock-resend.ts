@@ -5,7 +5,7 @@ import http from "node:http";
  * Guarda cada correo recibido y los expone en GET /__sent para verificarlos.
  */
 export default async function globalSetup() {
-  const sent: Array<{ from: string; to: string | string[]; subject: string; html: string; auth: string }> = [];
+  const sent: Array<{ from: string; to: string | string[]; subject: string; html: string; auth: string; attachments?: unknown[] }> = [];
   const server = http.createServer((req, res) => {
     if (req.method === "GET" && req.url === "/__sent") { res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify(sent)); return; }
     let body = "";
@@ -13,7 +13,7 @@ export default async function globalSetup() {
     req.on("end", () => {
       if (req.method === "POST" && req.url === "/emails") {
         const email = JSON.parse(body || "{}");
-        sent.push({ from: email.from, to: email.to, subject: email.subject, html: email.html, auth: String(req.headers.authorization || "") });
+        sent.push({ from: email.from, to: email.to, subject: email.subject, html: email.html, attachments: email.attachments, auth: String(req.headers.authorization || "") });
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ id: `mock_${sent.length}` }));
         return;

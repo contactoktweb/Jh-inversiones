@@ -29,6 +29,11 @@ test.describe("Seguridad y permisos", () => {
       ["/api/admin/settings", { transfer_instructions: "hack" }],
     ] as const) expect((await user.request.post(url, { data })).status(), url).toBe(403);
     expect((await user.request.get("/api/admin/export?tipo=clientes")).status()).toBe(403);
+    expect((await user.request.get(`/api/admin/payments/proof?id=${id}`)).status()).toBe(403);
+    // Un cliente no puede avisar el pago de una inversión ajena ni enviar algo que no sea una imagen.
+    expect((await user.request.post("/api/payments/report", { data: { investmentId: id } })).status()).toBe(404);
+    expect((await user.request.post("/api/payments/report", { data: { investmentId: id, image: "data:text/html;base64,PHNjcmlwdD4=" } })).status()).toBe(400);
+    expect((await request.get("/api/transfer-image")).status()).toBe(404);
   });
 
   test("valida montos, métodos y términos al invertir", async ({ browser }) => {
@@ -63,6 +68,7 @@ test.describe("Seguridad y permisos", () => {
     expect((await asB.from("investments").select("id")).data).toEqual([]);
     expect((await asB.from("profiles").select("email")).data).toEqual([{ email: b }]);
     expect((await asB.from("admin_audit").select("id")).data).toEqual([]);
+    expect((await asB.from("payment_proofs").select("investment_id")).data).toEqual([]);
     const insert = await asB.from("investments").insert({ user_id: user!.id, plan_id: "inicio", principal_usd: 999999, started_at: new Date().toISOString(), ends_at: new Date(Date.now() + 31 * 86_400_000).toISOString(), payment_reference: "hack" });
     expect(insert.error?.code).toBe("42501");
     expect((await asB.from("daily_rates").upsert({ rate_date: "2026-11-01", rate_pct: 99 })).error?.code).toBe("42501");

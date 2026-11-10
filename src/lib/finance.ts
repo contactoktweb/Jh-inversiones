@@ -26,6 +26,10 @@ export type Investment = {
   created_at?: string;
   confirmed_at?: string | null;
   admin_note?: string | null;
+  /** Transferencias: cuándo avisó el cliente que ya pagó, su comentario y si adjuntó comprobante. */
+  payment_reported_at?: string | null;
+  payment_report_note?: string | null;
+  has_proof?: boolean;
   claim_payout_details?: string | null;
   claim_payout_reference?: string | null;
   claim_admin_note?: string | null;

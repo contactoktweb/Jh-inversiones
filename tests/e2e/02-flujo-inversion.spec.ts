@@ -1,3 +1,4 @@
+import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { ageInvestments, closeDailyPrompt, createUser, newSession, service } from "./helpers";
 import { todayKey } from "../../src/lib/rates";
@@ -9,6 +10,7 @@ test.describe.serial("Flujo de inversión completo", () => {
   let admin: Page;
   let investor: Page;
   let transferRef = "";
+  const IMAGE = path.join(__dirname, "fixtures", "comprobante.png");
 
   test.beforeAll(async ({ browser }) => {
     await createUser("admin@e2e.test").catch(() => undefined); // admin por ADMIN_EMAILS
@@ -28,11 +30,18 @@ test.describe.serial("Flujo de inversión completo", () => {
     expect(Number(data!.rate_pct)).toBe(2);
   });
 
-  test("el administrador configura los datos de transferencia", async () => {
+  test("el administrador configura los datos de transferencia con foto", async () => {
     await admin.goto("/admin/ajustes");
+    await admin.locator("#transfer-image").setInputFiles(IMAGE);
+    await expect(admin.locator(".image-picker-preview img")).toBeVisible();
     await admin.getByLabel(/Datos que verá el cliente/).fill("Banco Prueba\nCuenta 987654321\nTitular JH Inversiones");
     await admin.getByRole("button", { name: "Guardar" }).click();
     await expect(admin.getByText("Ajustes guardados.")).toBeVisible();
+    const { data } = await service().from("settings").select("value").eq("key", "transfer_image").single();
+    expect(data!.value).toMatch(/^data:image\/jpeg;base64,/);
+    await admin.reload();
+    await expect(admin.locator(".image-picker-preview img")).toHaveJSProperty("complete", true);
+    expect(await admin.locator(".image-picker-preview img").evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(200);
   });
 
   test("pago de prueba: se acepta al instante y la inversión queda activa", async () => {
@@ -54,16 +63,40 @@ test.describe.serial("Flujo de inversión completo", () => {
     await investor.getByRole("button", { name: /Registrar inversión \$100\.00/ }).click();
     await expect(investor.getByRole("heading", { name: "Inversión registrada" })).toBeVisible();
     await expect(investor.getByText("Cuenta 987654321")).toBeVisible();
+    // La foto de los datos de pago se ve (servida solo a cuentas con sesión).
+    const photo = investor.locator(".transfer-image img");
+    await expect(photo).toBeVisible();
+    expect(await photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBe(200);
     transferRef = (await investor.locator(".invest-reference strong").innerText()).trim();
     expect(transferRef).toMatch(/^JH-[A-Z0-9]{6}$/);
+
+    // Todavía no avisa: el administrador lo ve como «AÚN NO AVISA».
+    await admin.goto("/admin/pagos");
+    await expect(admin.locator("tr", { hasText: transferRef })).toContainText("AÚN NO AVISA");
+
+    // El cliente avisa que ya transfirió, con n.º de operación y foto del comprobante.
+    await investor.getByLabel("N.º de operación o comentario (opcional)").fill("Operación 555-AB");
+    await investor.locator(`input[type=file][id^="proof-"]`).setInputFiles(IMAGE);
+    await expect(investor.locator(".report-payment .image-picker-preview img")).toBeVisible();
+    await investor.getByRole("button", { name: "Ya realicé la transferencia" }).click();
+    await expect(investor.getByText("¡Listo! Avisamos a la administración.")).toBeVisible();
 
     await investor.goto("/dashboard");
     await expect(investor.getByRole("heading", { name: "Pagos pendientes" })).toBeVisible();
     await expect(investor.getByText(transferRef)).toBeVisible();
+    await expect(investor.getByText("EN VERIFICACIÓN")).toBeVisible();
     await expect(investor.locator(".metric-value").first()).toHaveText("$500.00");
 
     await admin.goto("/admin/pagos");
     await expect(admin.locator(".nav-badge").first()).toHaveText("1");
+    const row = admin.locator("tr", { hasText: transferRef });
+    await expect(row).toContainText("AVISÓ QUE PAGÓ");
+    await expect(row).toContainText("Operación 555-AB");
+    await row.getByRole("button", { name: "Ver comprobante" }).click();
+    const proof = admin.getByRole("dialog", { name: "Comprobante de pago" }).locator("img");
+    await expect(proof).toBeVisible();
+    await expect.poll(() => proof.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(200);
+    await admin.getByRole("dialog").getByRole("button", { name: "Cerrar" }).last().click();
     await admin.locator("tr", { hasText: transferRef }).getByRole("button", { name: "Confirmar pago" }).click();
     await admin.getByRole("button", { name: "Sí, confirmar pago" }).click();
     await expect(admin.getByText(/Pago confirmado/)).toBeVisible();
@@ -79,6 +112,9 @@ test.describe.serial("Flujo de inversión completo", () => {
     await investor.locator(".invest-check input").check();
     await investor.getByRole("button", { name: /Registrar inversión/ }).click();
     const ref = (await investor.locator(".invest-reference strong").innerText()).trim();
+    // Sin comprobante: el aviso también funciona.
+    await investor.getByRole("button", { name: "Ya realicé la transferencia" }).click();
+    await expect(investor.getByText("¡Listo! Avisamos a la administración.")).toBeVisible();
 
     await admin.goto("/admin/pagos");
     await admin.locator("tr", { hasText: ref }).getByRole("button", { name: "Rechazar" }).click();

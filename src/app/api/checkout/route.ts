@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { MAX_INVESTMENT_USD, MIN_INVESTMENT_USD } from "@/lib/rates";
 import { paymentMethods, type PaymentMethod } from "@/lib/config";
-import { formatUsd } from "@/lib/finance";
 import { fail, guard, readJson } from "@/lib/server/http";
-import { notifyAdmin } from "@/lib/server/notify";
 import { PaymentError, startPayment } from "@/lib/server/payments";
 
 export const runtime="nodejs";
@@ -23,7 +21,7 @@ export async function POST(request: Request){
   try{
     const result=await startPayment(session,amount,method);
     if(result.kind==="redirect")return NextResponse.json({status:"redirect",url:result.url});
-    if(result.kind==="pending")await notifyAdmin("Nueva inversión pendiente de pago",[`${session.email} registró una inversión de <strong>${formatUsd(amount)}</strong> por transferencia con la referencia <strong>${result.reference}</strong>.`,"Cuando veas el dinero en tu cuenta, confírmala en Administración → Pagos."],"/admin/pagos");
+    // Transferencia: el administrador recibe el aviso cuando el cliente pulsa «Ya realicé la transferencia» (/api/payments/report).
     return NextResponse.json({status:result.kind,test:result.kind==="accepted",message:result.kind==="accepted"?"Pago de prueba aceptado":"Inversión registrada: pendiente de pago",investmentId:result.investmentId,reference:result.reference,amountUsd:result.amountUsd,planName:result.planName});
   }catch(e){
     if(e instanceof PaymentError)return fail(e.message,e.status);

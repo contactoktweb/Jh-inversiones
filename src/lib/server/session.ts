@@ -47,6 +47,14 @@ export async function getRates(): Promise<DailyRates> {
 }
 
 /** Valor de un ajuste (tabla settings), por ejemplo las instrucciones de transferencia. */
+/** Dirección de la foto con los datos de pago (vacía si el administrador no subió ninguna). */
+export async function getTransferImageUrl(): Promise<string> {
+  const supabase = await getSupabaseServer();
+  if (!supabase) return "";
+  const { data } = await supabase.from("settings").select("updated_at").eq("key", "transfer_image").neq("value", "").maybeSingle();
+  return data ? `/api/transfer-image?v=${new Date(data.updated_at).getTime()}` : "";
+}
+
 export async function getSetting(key: string): Promise<string> {
   const supabase = await getSupabaseServer();
   if (!supabase) return "";

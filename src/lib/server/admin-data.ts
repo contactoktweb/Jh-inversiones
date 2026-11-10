@@ -9,16 +9,18 @@ export type ClientProfile = {
 };
 export type AuditEntry = { id: number; actor_email: string; action: string; entity: string; entity_id: string | null; details: Record<string, unknown>; created_at: string };
 
-const INVESTMENT_COLUMNS = "id,user_id,plan_id,principal_usd,started_at,ends_at,status,payment_method,payment_reference,created_at,confirmed_at,admin_note,plan:plans(name)";
+const INVESTMENT_COLUMNS = "id,user_id,plan_id,principal_usd,started_at,ends_at,status,payment_method,payment_reference,created_at,confirmed_at,admin_note,payment_reported_at,payment_report_note,plan:plans(name)";
 
 /** Todo lo que necesita el panel de administración, leído con la service role key (solo en el servidor). */
 export async function loadAdminData() {
   const admin = getSupabaseAdmin();
-  const [{ data: investments, error }, { data: profiles, error: profilesError }, { data: claims }] = await Promise.all([
+  const [{ data: investments, error }, { data: profiles, error: profilesError }, { data: claims }, { data: proofs }] = await Promise.all([
     admin.from("investments").select(INVESTMENT_COLUMNS).order("created_at", { ascending: false }),
     admin.from("profiles").select("id,email,role,status,full_name,phone,country,payout_details,created_at").order("created_at", { ascending: false }),
     admin.from("claims").select(CLAIM_COLUMNS),
+    admin.from("payment_proofs").select("investment_id"),
   ]);
+  const withProof = new Set((proofs || []).map(p => p.investment_id as string));
   if (error || profilesError) throw new Error("No fue posible cargar los datos de administración.");
   const byId = new Map((profiles || []).map(p => [p.id, p]));
   const rows: Investment[] = attachClaims((investments || []).map(({ plan, ...row }) => ({
@@ -27,6 +29,7 @@ export async function loadAdminData() {
     principal_usd: Number(row.principal_usd),
     owner_email: byId.get(row.user_id)?.email || row.user_id,
     owner_name: byId.get(row.user_id)?.full_name || null,
+    has_proof: withProof.has(row.id),
   })), claims as ClaimRow[] | null);
   return { investments: rows, profiles: (profiles || []) as ClientProfile[] };
 }
