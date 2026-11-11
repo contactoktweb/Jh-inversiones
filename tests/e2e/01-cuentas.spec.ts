@@ -108,4 +108,26 @@ test.describe("Cuentas de usuario", () => {
     await page.goto("/dashboard");
     await expect(page.getByRole("heading", { name: "Hola, Ana." })).toBeVisible();
   });
+  test("la sesión queda guardada: el encabezado fijo lleva directo al panel", async ({ page }) => {
+    const email = `sesion-${Date.now()}@e2e.test`;
+    await createUser(email);
+    await page.goto("/");
+    await expect(page.locator(".bm-header").getByRole("link", { name: "Iniciar sesión" })).toBeVisible();
+    await login(page, email);
+
+    // En una pestaña nueva (misma sesión del navegador) no vuelve a pedir la contraseña.
+    const tab = await page.context().newPage();
+    await tab.goto("/");
+    const header = tab.locator(".bm-header");
+    const panel = header.getByRole("link", { name: "Mi panel" });
+    await expect(panel).toBeVisible();
+    await tab.mouse.wheel(0, 2500);
+    await expect(header).toHaveClass(/is-scrolled/);
+    expect(await header.evaluate(el => getComputedStyle(el).position)).toBe("fixed");
+    expect((await header.boundingBox())!.y).toBe(0);
+    await panel.click();
+    await tab.waitForURL("**/dashboard");
+    await tab.goto("/acceso");
+    await tab.waitForURL("**/dashboard");
+  });
 });

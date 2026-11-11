@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, ChevronDown, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Logo from "./logo";
+import { getSupabaseBrowser } from "@/lib/client/supabase";
 const links = [
   {href:"/#beneficios",label:"Por qué JH"},
   {href:"/#experiencia",label:"La experiencia"},
@@ -13,13 +14,25 @@ const links = [
 ];
 export default function Nav(){
   const [open,setOpen]=useState(false);
-  return <header className="bm-header">
+  const [scrolled,setScrolled]=useState(false);
+  const [signedIn,setSignedIn]=useState(false);
+  useEffect(()=>{
+    const onScroll=()=>setScrolled(window.scrollY>12);
+    onScroll(); window.addEventListener("scroll",onScroll,{passive:true});
+    // La sesión queda guardada en el navegador: si ya entró, el encabezado lleva directo a su panel.
+    const supabase=getSupabaseBrowser();
+    supabase?.auth.getSession().then(({data})=>setSignedIn(Boolean(data.session))).catch(()=>{});
+    const sub=supabase?.auth.onAuthStateChange((_e,session)=>setSignedIn(Boolean(session)));
+    return ()=>{window.removeEventListener("scroll",onScroll);sub?.data.subscription.unsubscribe();};
+  },[]);
+  const account=signedIn?{href:"/dashboard",label:"Mi panel"}:{href:"/acceso",label:"Iniciar sesión"};
+  return <header className={`bm-header${scrolled||open?" is-scrolled":""}`}>
     <div className="bm-nav-container">
       <Logo/>
       <nav className="bm-nav-links" aria-label="Navegación principal">{links.map(item=><Link key={item.href} href={item.href}>{item.label}</Link>)}</nav>
-      <div className="bm-nav-actions"><Link href="/acceso" className="bm-login">Iniciar sesión</Link><Link href="/#planes" className="bm-nav-start">Comenzar <ArrowUpRight size={16}/></Link>
+      <div className="bm-nav-actions"><Link href={account.href} className={`bm-login${signedIn?" is-signed-in":""}`}>{account.label}</Link><Link href="/#planes" className="bm-nav-start">Comenzar <ArrowUpRight size={16}/></Link>
       <button className="bm-nav-toggle" onClick={()=>setOpen(!open)} aria-expanded={open} aria-label={open?"Cerrar menú":"Abrir menú"}>{open?<X size={22}/>:<Menu size={22}/>}</button></div>
     </div>
-    <AnimatePresence>{open&&<motion.nav className="bm-nav-mobile" initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}} transition={{duration:.2}} aria-label="Navegación móvil">{links.map(item=><Link onClick={()=>setOpen(false)} key={item.href} href={item.href}>{item.label}<ArrowUpRight size={15}/></Link>)}<Link onClick={()=>setOpen(false)} href="/acceso">Iniciar sesión <ArrowUpRight size={15}/></Link></motion.nav>}</AnimatePresence>
+    <AnimatePresence>{open&&<motion.nav className="bm-nav-mobile" initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}} transition={{duration:.2}} aria-label="Navegación móvil">{links.map(item=><Link onClick={()=>setOpen(false)} key={item.href} href={item.href}>{item.label}<ArrowUpRight size={15}/></Link>)}<Link onClick={()=>setOpen(false)} href={account.href}>{account.label} <ArrowUpRight size={15}/></Link></motion.nav>}</AnimatePresence>
   </header>;
 }
