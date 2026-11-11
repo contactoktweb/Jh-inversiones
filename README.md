@@ -41,7 +41,7 @@ Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En res
 
 **Público:** `/` (landing), `/terminos`, `/privacidad`, `/acceso` (login, registro y recuperación), `/restablecer`.
 
-**Cliente:** `/dashboard` (panel), `/invertir?monto=N` (nueva inversión), `/cuenta` (perfil, datos de retiro y contraseña).
+**Cliente:** `/dashboard` (panel), `/invertir?monto=N` (nueva inversión), `/referidos` (código, enlace de invitación y comisiones), `/cuenta` (perfil, datos de retiro y contraseña). El registro acepta `/acceso?ref=CÓDIGO`.
 
 **Administración:**
 
@@ -54,6 +54,7 @@ Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En res
 | `/admin/inversiones` | Todas las inversiones, filtros y cancelación |
 | `/admin/planes` | Crear, editar, ordenar, ocultar o eliminar planes (la web y el mínimo se actualizan solos) |
 | `/admin/clientes` y `/admin/clientes/[id]` | Lista y ficha del cliente; suspender, reactivar y roles |
+| `/admin/referidos` | Porcentaje de comisión, comisiones por pagar/pagadas/anuladas y quiénes refieren |
 | `/admin/actividad` | Registro de auditoría |
 | `/admin/ajustes` | Foto y texto con los datos de pago, configuración actual y exportaciones CSV |
 
@@ -71,12 +72,13 @@ Paso a paso completo en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md). En res
 | `GET /api/admin/payments/proof?id=` | Admin | Foto del comprobante que envió el cliente |
 | `POST /api/payments/report` | Cliente | «Ya realicé la transferencia» (+ comprobante opcional): avisa al administrador por correo |
 | `GET /api/transfer-image` | Con sesión | Foto con los datos de pago subida en Ajustes |
-| `POST /api/admin/investments` | Admin | Registra una inversión manual o cancela una inversión |
+| `POST /api/admin/investments` | Admin | Registra una inversión manual, cambia el plazo mínimo de retiro (`action: "term"`) o cancela una inversión |
 | `POST /api/admin/claims` | Admin | Aprueba, desembolsa o rechaza un retiro |
 | `POST /api/admin/users` | Admin | Suspende, reactiva o cambia el rol de una cuenta |
 | `POST /api/admin/plans` | Admin | Crea, edita, oculta o elimina un plan |
 | `POST /api/admin/settings` | Admin | Guarda los ajustes |
-| `GET /api/admin/export?tipo=` | Admin | CSV de `inversiones`, `retiros`, `clientes` o `actividad` |
+| `POST /api/admin/referrals` | Admin | Porcentaje de comisión, pagar o anular comisiones, cambiar quién refirió a un cliente |
+| `GET /api/admin/export?tipo=` | Admin | CSV de `inversiones`, `retiros`, `clientes`, `referidos` o `actividad` |
 | `POST /api/webhooks/stripe` | Stripe | Fase pendiente |
 
 ## 3. Estructura
@@ -118,12 +120,13 @@ docs/                       # Manual del dueño y guía de la pasarela
 | Tabla | Contenido |
 |---|---|
 | `plans` | Planes editables: nombre, monto desde, beneficios, destacado, orden, visible |
-| `profiles` | Rol (`user`/`admin`), estado (`active`/`suspended`), nombre, teléfono, país, datos de retiro |
-| `investments` | Monto, plan, fechas, `payment_method` (`test`, `transfer`, `manual`, `stripe`), referencia única, estado (`pending_payment`, `active`, `closed`, `cancelled`) |
+| `profiles` | Rol (`user`/`admin`), estado (`active`/`suspended`), nombre, teléfono, país, datos de retiro, `referral_code` (único) y `referred_by` (quién lo invitó) |
+| `investments` | Monto, plan, fechas, `term_days` (plazo mínimo de retiro, 30 por defecto, editable por inversión), `payment_method` (`test`, `transfer`, `manual`, `stripe`), referencia única, estado (`pending_payment`, `active`, `closed`, `cancelled`) |
 | `daily_rates` | Tasa por día (`AAAA-MM-DD`, hora de Bogotá) |
 | `claims` | Retiros: monto congelado, datos de pago, estado, comprobante y nota |
 | `settings` | Ajustes editables (texto y foto con los datos de pago) |
 | `payment_proofs` | Comprobantes de transferencia enviados por los clientes (solo service role) |
+| `referral_commissions` | Comisiones por referidos: una por inversión confirmada de un invitado (`pending`/`paid`/`cancelled`), con comprobante |
 | `admin_audit` | Registro de acciones administrativas |
 
 **RLS:** los clientes solo pueden **leer** sus propias filas (y las tasas y ajustes). Ninguna tabla admite escrituras desde el navegador: todo pasa por las APIs del servidor con la service role. `admin_audit` no es legible desde el cliente.

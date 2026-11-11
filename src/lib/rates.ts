@@ -2,7 +2,9 @@
 // Las ganancias se calculan como interés simple: cada día completo suma
 // capital × tasa del día. El día en curso se acumula proporcionalmente.
 export const DEFAULT_DAILY_RATE_PCT = 1.5;
+/** Plazo mínimo de retiro por defecto; el administrador puede cambiarlo en cada inversión (term_days). */
 export const MIN_TERM_DAYS = 30;
+export const MAX_TERM_DAYS = 3650;
 export const MIN_INVESTMENT_USD = 50;
 export const MAX_INVESTMENT_USD = 100_000;
 export const MAX_DAILY_RATE_PCT = 100;
@@ -31,7 +33,20 @@ export function recentDayKeys(count: number, now = Date.now()) {
 }
 
 export type ClaimStatus = "pending" | "approved" | "rejected" | "settled";
-export type EarningsPosition = { principal_usd: number; started_at: string; status: string; claim_status?: string | null; claim_requested_at?: string | null };
+export type EarningsPosition = { principal_usd: number; started_at: string; ends_at?: string | null; term_days?: number | null; status: string; claim_status?: string | null; claim_requested_at?: string | null };
+
+export const isValidTermDays = (value: unknown): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= MAX_TERM_DAYS;
+
+/** Plazo mínimo de la inversión en días (term_days; si falta, el que hay entre inicio y fecha de retiro). */
+export function termDaysOf(position: EarningsPosition) {
+  if (isValidTermDays(position.term_days)) return position.term_days;
+  if (position.ends_at) {
+    const days = Math.round((new Date(position.ends_at).getTime() - new Date(position.started_at).getTime()) / DAY);
+    if (days >= 1) return days;
+  }
+  return MIN_TERM_DAYS;
+}
 
 /** Una solicitud de retiro vigente (no rechazada) congela las ganancias en su fecha. */
 export const hasActiveClaim = (position: EarningsPosition) => Boolean(position.claim_status && position.claim_status !== "rejected");
@@ -41,9 +56,10 @@ export const isEarning = (position: EarningsPosition) => position.status === "ac
 
 export function calculateEarnings(position: EarningsPosition, rates: DailyRates, now = Date.now()) {
   const started = new Date(position.started_at).getTime();
+  const termDays = termDaysOf(position);
+  const availableAt = started + termDays * DAY;
   if (!isEarning(position)) {
-    const availableAt = started + MIN_TERM_DAYS * DAY;
-    return { earnings: 0, total: position.principal_usd, daysElapsed: 0, daysRemaining: MIN_TERM_DAYS, availableAt, termProgress: 0, currentRate: rateFor(rates, dayKey(now)), canWithdraw: false };
+    return { earnings: 0, total: position.principal_usd, daysElapsed: 0, daysRemaining: termDays, termDays, availableAt, termProgress: 0, currentRate: rateFor(rates, dayKey(now)), canWithdraw: false };
   }
   const frozenAt = hasActiveClaim(position) && position.claim_requested_at ? new Date(position.claim_requested_at).getTime() : Infinity;
   const elapsed = Math.max(0, Math.min(now, frozenAt) - started);
@@ -53,13 +69,13 @@ export function calculateEarnings(position: EarningsPosition, rates: DailyRates,
   const currentRate = rateFor(rates, dayKey(started + fullDays * DAY));
   const partial = (elapsed - fullDays * DAY) / DAY;
   earnings += position.principal_usd * currentRate / 100 * partial;
-  const availableAt = started + MIN_TERM_DAYS * DAY;
-  const termProgress = Math.min(1, elapsed / (MIN_TERM_DAYS * DAY));
+  const termProgress = Math.min(1, elapsed / (termDays * DAY));
   return {
     earnings,
     total: position.principal_usd + earnings,
     daysElapsed: fullDays,
     daysRemaining: Math.max(0, Math.ceil((availableAt - now) / DAY)),
+    termDays,
     availableAt,
     termProgress,
     currentRate,

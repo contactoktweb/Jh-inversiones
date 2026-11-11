@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Download, Search, ShieldCheck, ShieldOff, UserCheck, UserX, Users } from "lucide-react";
+import { Download, Gift, Search, ShieldCheck, ShieldOff, UserCheck, UserX, Users } from "lucide-react";
 import { formatDate, formatUsd } from "@/lib/finance";
 import type { ClientProfile } from "@/lib/server/admin-data";
 import { ActionDialog, AnimatePresence, Feedback, Filters, matches, useAdminAction, useDialog } from "./ui";
@@ -49,4 +49,17 @@ export function ClientActions({ client, isSelf }: { client: ClientProfile; isSel
       description={<p><strong>{client.email}</strong>: {DIALOG[dialog.state].text}</p>}
       onConfirm={() => action.run("/api/admin/users", { userId: client.id, action: dialog.state })} />}</AnimatePresence>
   </>;
+}
+
+/** Cambiar o quitar quién refirió a un cliente (por el código de esa persona). */
+export function ReferralAssign({ clientId, currentCode }: { clientId: string; currentCode: string }) {
+  const action = useAdminAction();
+  const [code, setCode] = useState(currentCode);
+  return <form className="referral-assign" onSubmit={e => { e.preventDefault(); action.run("/api/admin/referrals", { action: "assign", userId: clientId, code }); }}>
+    <label htmlFor="assign-code">Código de quien lo refirió <small>(vacío = nadie)</small></label>
+    <div className="rate-form-row"><input id="assign-code" className="modal-input" maxLength={16} value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="Ej.: JH4F9A2C" />
+      <button className="act-primary" disabled={action.busy}><Gift size={14} /> {action.busy ? "Guardando…" : "Guardar referido"}</button></div>
+    <p className="chart-note">Las comisiones se generan con las inversiones que se confirmen desde ahora; las anteriores no cambian.</p>
+    <Feedback message={action.message} error={action.error} />
+  </form>;
 }

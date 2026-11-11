@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Activity, ArrowUpRight, Banknote, CalendarDays, CircleHelp, CreditCard, LayoutDashboard, LogOut, Menu, Layers, Percent, Settings2, Sparkles, UserRound, Users, Wallet, X, type LucideIcon } from "lucide-react";
+import { Activity, ArrowUpRight, Banknote, Gift, CalendarDays, CircleHelp, CreditCard, LayoutDashboard, LogOut, Menu, Layers, Percent, Settings2, Sparkles, UserRound, Users, Wallet, X, type LucideIcon } from "lucide-react";
 import Logo from "./logo";
 import { formatDate } from "@/lib/finance";
 
@@ -13,6 +13,7 @@ const NAV: Record<Variant, NavItem[]> = {
   user: [
     { href: "/dashboard", label: "Mi inversión", icon: LayoutDashboard },
     { href: "/invertir", label: "Nueva inversión", icon: Wallet },
+    { href: "/referidos", label: "Referidos", icon: Gift },
     { href: "/cuenta", label: "Mi cuenta", icon: UserRound },
     { href: "/#preguntas", label: "Centro de ayuda", icon: CircleHelp },
   ],
@@ -24,6 +25,7 @@ const NAV: Record<Variant, NavItem[]> = {
     { href: "/admin/inversiones", label: "Inversiones", icon: Wallet },
     { href: "/admin/planes", label: "Planes", icon: Layers },
     { href: "/admin/clientes", label: "Clientes", icon: Users },
+    { href: "/admin/referidos", label: "Referidos", icon: Gift },
     { href: "/admin/actividad", label: "Actividad", icon: Activity },
     { href: "/admin/ajustes", label: "Ajustes", icon: Settings2 },
   ],
@@ -48,7 +50,7 @@ export default function AppShell({ variant, email, badges = {}, eyebrow, title, 
       <div className="sidebar-bottom">
         <div className="sidebar-help">{variant === "admin"
           ? <><Settings2 size={23} /><h3>Recuerda a diario.</h3><p>Configura cada día el porcentaje de ganancia y revisa pagos y retiros pendientes.</p><Link href="/">Ver sitio público <ArrowUpRight size={14} /></Link></>
-          : <><Sparkles size={23} /><h3>Plazo mínimo: 1 mes.</h3><p>Tus ganancias se suman cada día según la tasa publicada por la administración.</p><Link href="/invertir">Invertir más <ArrowUpRight size={14} /></Link></>}</div>
+          : <><Sparkles size={23} /><h3>Invita y gana.</h3><p>Comparte tu código: ganas una comisión por cada inversión de las personas que invites.</p><Link href="/referidos">Mi código <ArrowUpRight size={14} /></Link></>}</div>
         <div className="sidebar-foot"><span title={email}>{variant === "admin" ? "ADMINISTRADOR" : "CUENTA ACTIVA"}</span><form method="POST" action="/api/signout"><button type="submit" title="Cerrar sesión" aria-label="Cerrar sesión"><LogOut size={18} /></button></form></div>
       </div>
     </aside>

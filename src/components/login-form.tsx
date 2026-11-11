@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, KeyRound, Mail, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, Gift, KeyRound, Mail, TriangleAlert } from "lucide-react";
 import Logo from "./logo";
 import { getSupabaseBrowser } from "@/lib/client/supabase";
 import { hasSupabaseConfig } from "@/lib/config";
+import { normalizeReferralCode, REFERRAL_STORAGE_KEY } from "@/lib/referrals";
 
 type Mode = "login" | "signup" | "forgot";
 const safeNext = (value: string | null) => value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\") ? value : null;
@@ -13,7 +14,17 @@ const safeNext = (value: string | null) => value && value.startsWith("/") && !va
 function InnerForm() {
   const params = useSearchParams();
   const router = useRouter();
-  const [mode,setMode] = useState<Mode>("login");
+  const refParam = normalizeReferralCode(params.get("ref"));
+  const [mode,setMode] = useState<Mode>(refParam?"signup":"login");
+  const [referral,setReferral] = useState(refParam||"");
+  // El código de un enlace de invitación (?ref=) se recuerda aunque la persona navegue antes de registrarse.
+  useEffect(()=>{
+    try{
+      if(refParam){localStorage.setItem(REFERRAL_STORAGE_KEY,refParam);return;}
+      const saved=normalizeReferralCode(localStorage.getItem(REFERRAL_STORAGE_KEY));
+      if(saved)setReferral(r=>r||saved);
+    }catch{/* sin almacenamiento local */}
+  },[refParam]);
   const [email,setEmail] = useState(""); const [password,setPassword] = useState("");
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState(params.get("error")?"El enlace no es válido o ya expiró. Si confirmaste tu cuenta, inicia sesión; si querías cambiar tu contraseña, pide un enlace nuevo.":"");
@@ -40,7 +51,8 @@ function InnerForm() {
         return;
       }
       if(signup){
-        const result=await postAuth("/api/auth/signup",{email,password});
+        const result=await postAuth("/api/auth/signup",{email,password,referralCode:referral.trim()});
+        try{localStorage.removeItem(REFERRAL_STORAGE_KEY);}catch{/* sin almacenamiento local */}
         if(result.confirm){setMessage("Cuenta creada. Revisa tu correo y confirma tu cuenta para entrar.");setMode("login");return;}
       }
       const {data,error: authError}=await supabase.auth.signInWithPassword({email,password});
@@ -64,6 +76,8 @@ function InnerForm() {
       <div className="auth-input-shell"><Mail size={19}/><input required id="email" autoComplete="email" type="email" placeholder="tu@correo.com" value={email} onChange={e=>setEmail(e.target.value)} /></div>
       {mode!=="forgot"&&<><label htmlFor="password">Contraseña</label>
       <div className="auth-input-shell"><KeyRound size={19}/><input required id="password" minLength={8} autoComplete={signup?"new-password":"current-password"} type="password" placeholder={signup?"Mínimo 8 caracteres":"••••••••"} value={password} onChange={e=>setPassword(e.target.value)} /></div></>}
+      {signup&&<><label htmlFor="referral">Código de referido (opcional)</label>
+      <div className="auth-input-shell"><Gift size={19}/><input id="referral" autoComplete="off" maxLength={16} placeholder="Ej.: JH4F9A2C" value={referral} onChange={e=>setReferral(e.target.value.toUpperCase())} /></div></>}
       <button className="auth-submit" disabled={busy} type="submit">{busy?"Procesando…":mode==="forgot"?"Enviar enlace":signup?"Crear cuenta":"Iniciar sesión"}<ArrowRight size={19}/></button>
       {message&&<div className={`auth-message ${error?"error":""}`} role="status">{message}</div>}
     </form>

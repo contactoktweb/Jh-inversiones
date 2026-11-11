@@ -32,14 +32,14 @@ export function useAdminAction() {
   return { busy, message, error, run, clear: () => setMessage("") };
 }
 
-export type DialogField = { name: string; label: string; required?: boolean; multiline?: boolean; placeholder?: string };
+export type DialogField = { name: string; label: string; required?: boolean; multiline?: boolean; placeholder?: string; type?: "text" | "number"; min?: number; max?: number; defaultValue?: string; hint?: string };
 
 /** Ventana de confirmación con campos opcionales (nota, comprobante…). */
 export function ActionDialog({ title, description, confirmLabel, tone = "primary", fields = [], onConfirm, onClose }: {
   title: string; description: React.ReactNode; confirmLabel: string; tone?: "primary" | "danger" | "success"; fields?: DialogField[];
   onConfirm: (values: Record<string, string>) => Promise<boolean>; onClose: () => void;
 }) {
-  const [values, setValues] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, string>>(() => Object.fromEntries(fields.filter(f => f.defaultValue !== undefined).map(f => [f.name, f.defaultValue!])));
   const [busy, setBusy] = useState(false);
   async function submit(e: React.FormEvent) { e.preventDefault(); setBusy(true); const ok = await onConfirm(values); setBusy(false); if (ok) onClose(); }
   return <motion.div className="rate-modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -49,7 +49,7 @@ export function ActionDialog({ title, description, confirmLabel, tone = "primary
       <div className="modal-description">{description}</div>
       {fields.map(f => <label key={f.name} className="modal-field">{f.label}{f.multiline
         ? <textarea className="field-textarea" name={f.name} rows={3} required={f.required} placeholder={f.placeholder} value={values[f.name] || ""} onChange={e => setValues({ ...values, [f.name]: e.target.value })} />
-        : <input className="modal-input" name={f.name} required={f.required} placeholder={f.placeholder} value={values[f.name] || ""} onChange={e => setValues({ ...values, [f.name]: e.target.value })} />}</label>)}
+        : <input className="modal-input" name={f.name} type={f.type || "text"} min={f.min} max={f.max} step={f.type === "number" ? 1 : undefined} required={f.required} placeholder={f.placeholder} value={values[f.name] || ""} onChange={e => setValues({ ...values, [f.name]: e.target.value })} />}{f.hint && <small className="modal-hint">{f.hint}</small>}</label>)}
       <div className="rate-modal-actions"><button type="submit" className={`rate-primary tone-${tone}`} disabled={busy}>{busy ? "Procesando…" : confirmLabel}</button><button type="button" className="rate-ghost" onClick={onClose}>Cancelar</button></div>
     </motion.form>
   </motion.div>;

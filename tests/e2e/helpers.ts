@@ -52,10 +52,10 @@ export async function lastEmailLink(to: string) {
 
 /** Mueve el inicio de las inversiones de un usuario `days` días hacia atrás (simula el paso del tiempo). */
 export async function ageInvestments(userId: string, days: number) {
-  const { data } = await service().from("investments").select("id,started_at").eq("user_id", userId).eq("status", "active");
+  const { data } = await service().from("investments").select("id,started_at,term_days").eq("user_id", userId).eq("status", "active");
   for (const row of data || []) {
     const start = new Date(Date.now() - days * 86_400_000);
-    await service().from("investments").update({ started_at: start.toISOString(), ends_at: new Date(start.getTime() + 30 * 86_400_000).toISOString() }).eq("id", row.id);
+    await service().from("investments").update({ started_at: start.toISOString(), ends_at: new Date(start.getTime() + (row.term_days || 30) * 86_400_000).toISOString() }).eq("id", row.id);
   }
 }
 

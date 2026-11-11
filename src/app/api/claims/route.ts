@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/server/supabase";
 import { getSupabaseAdmin } from "@/lib/server/admin";
-import { formatUsd } from "@/lib/finance";
+import { formatDate, formatUsd } from "@/lib/finance";
 import { calculateEarnings } from "@/lib/rates";
 import { fail, guard, isUuid, optionalText, readJson } from "@/lib/server/http";
 import { escapeHtml, notifyAdmin } from "@/lib/server/notify";
@@ -22,7 +22,7 @@ export async function POST(request:Request){
   if(!supabase)return fail("Acceso no disponible.",503);
   // La consulta con RLS garantiza que el usuario sea propietario de la inversión.
   const {data:row,error:lookupError}=await supabase.from("investments")
-    .select("id,plan_id,principal_usd,started_at,ends_at,status")
+    .select("id,plan_id,principal_usd,started_at,ends_at,term_days,status")
     .eq("id",body.investmentId).eq("user_id",session.userId).maybeSingle();
   if(lookupError||!row)return fail("Inversión no encontrada.",404);
   try{
@@ -31,7 +31,7 @@ export async function POST(request:Request){
     if(prior&&prior.status!=="rejected")return fail("Ya tienes una solicitud de retiro para esta inversión.",409);
     const position={...row,principal_usd:Number(row.principal_usd)};
     const calc=calculateEarnings(position,await getRates());
-    if(!calc.canWithdraw)return fail(row.status!=="active"?"Esta inversión no está activa.":"Esta inversión todavía no cumple el plazo mínimo de 30 días.",409);
+    if(!calc.canWithdraw)return fail(row.status!=="active"?"Esta inversión no está activa.":`Esta inversión todavía no cumple su plazo mínimo de ${calc.termDays} días: podrás solicitar el retiro desde el ${formatDate(calc.availableAt)}.`,409);
     const amount=Math.round(calc.total*100)/100;
     const record={user_id:session.userId,investment_id:row.id,expected_amount_usd:amount,status:"pending",email_status:"pending",created_at:new Date().toISOString(),resolved_at:null,resolved_by:null,payout_details:payoutDetails,payout_reference:null,admin_note:null};
     const {data:saved,error:saveError}=prior

@@ -33,9 +33,31 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- Referidos: cada cuenta tiene un código propio; referred_by guarda quién la invitó.
+create or replace function public.new_referral_code() returns text
+language plpgsql set search_path = public as $$
+declare candidate text;
+begin
+  loop
+    candidate := 'JH' || upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
+    exit when not exists (select 1 from public.profiles where referral_code = candidate);
+  end loop;
+  return candidate;
+end $$;
+alter table public.profiles add column if not exists referral_code text;
+alter table public.profiles add column if not exists referred_by uuid references public.profiles(id) on delete set null;
+alter table public.profiles add column if not exists referred_at timestamptz;
+alter table public.profiles drop constraint if exists profiles_not_self_referred;
+alter table public.profiles add constraint profiles_not_self_referred check (referred_by is null or referred_by <> id);
+
 -- Perfiles de cuentas creadas antes de ejecutar este esquema.
 insert into public.profiles (id, email)
   select id, coalesce(email, '') from auth.users on conflict (id) do nothing;
+update public.profiles set referral_code = public.new_referral_code() where referral_code is null;
+alter table public.profiles alter column referral_code set default public.new_referral_code();
+alter table public.profiles alter column referral_code set not null;
+create unique index if not exists profiles_referral_code_key on public.profiles (referral_code);
+create index if not exists idx_profiles_referred_by on public.profiles (referred_by);
 
 -- ───────────────────────── Planes ─────────────────────────
 -- Editables desde /admin/planes. A cada inversión le corresponde el plan activo de mayor
@@ -71,14 +93,21 @@ create table if not exists public.investments (
   principal_usd numeric(14,2) not null check (principal_usd >= 50),
   -- Inicio del cómputo de ganancias (fecha de confirmación del pago).
   started_at timestamptz not null,
-  -- Fecha desde la que se puede solicitar el retiro (plazo mínimo de 30 días).
+  -- Fecha desde la que se puede solicitar el retiro (inicio + term_days).
   ends_at timestamptz not null,
   payment_method text not null default 'test',
   payment_reference text not null unique,
   status text not null default 'active',
-  created_at timestamptz not null default now(),
-  constraint minimum_term check (ends_at >= started_at + interval '30 days')
+  created_at timestamptz not null default now()
 );
+-- Plazo mínimo de retiro de cada inversión, en días (30 por defecto; el administrador lo cambia por inversión).
+alter table public.investments add column if not exists term_days integer not null default 30;
+alter table public.investments drop constraint if exists investments_term_days_check;
+alter table public.investments add constraint investments_term_days_check check (term_days between 1 and 3650);
+-- Versiones anteriores exigían 30 días fijos; ahora el plazo depende de term_days.
+alter table public.investments drop constraint if exists minimum_term;
+alter table public.investments drop constraint if exists investments_term_check;
+alter table public.investments add constraint investments_term_check check (ends_at > started_at);
 -- Métodos: test = pago de prueba · transfer = transferencia que el admin confirma ·
 -- manual = registrada por el admin · stripe = pasarela (fase pendiente).
 alter table public.investments drop constraint if exists investments_payment_method_check;
@@ -111,6 +140,25 @@ create table if not exists public.payment_proofs (
   user_id uuid not null references auth.users(id) on delete cascade,
   image text not null check (char_length(image) <= 1500000),
   created_at timestamptz not null default now()
+);
+
+-- ───────────────────────── Comisiones por referidos ─────────────────────────
+-- Una por inversión confirmada de una persona referida: porcentaje (Ajustes de referidos) × monto.
+-- pending = por pagar · paid = la administración la pagó · cancelled = anulada.
+create table if not exists public.referral_commissions (
+  id uuid primary key default gen_random_uuid(),
+  referrer_id uuid not null references auth.users(id) on delete cascade,
+  referred_id uuid not null references auth.users(id) on delete cascade,
+  investment_id uuid not null unique references public.investments(id) on delete cascade,
+  base_usd numeric(14,2) not null check (base_usd > 0),
+  rate_pct numeric(6,3) not null check (rate_pct > 0 and rate_pct <= 100),
+  amount_usd numeric(14,2) not null check (amount_usd > 0),
+  status text not null default 'pending' check (status in ('pending','paid','cancelled')),
+  created_at timestamptz not null default now(),
+  resolved_at timestamptz,
+  resolved_by uuid references auth.users(id) on delete set null,
+  payout_reference text,
+  admin_note text
 );
 
 -- ───────────────────────── Tasas diarias ─────────────────────────
@@ -151,7 +199,8 @@ create table if not exists public.settings (
   updated_at timestamptz not null default now()
 );
 insert into public.settings (key, value) values
-  ('transfer_instructions', 'Configura aquí los datos de tu cuenta bancaria desde el panel de administración → Ajustes.')
+  ('transfer_instructions', 'Configura aquí los datos de tu cuenta bancaria desde el panel de administración → Ajustes.'),
+  ('referral_commission_pct', '5')
   on conflict (key) do nothing;
 
 -- ───────────────────────── Registro de actividad ─────────────────────────
@@ -173,6 +222,8 @@ create index if not exists idx_investments_status on public.investments (status)
 create index if not exists idx_claims_user on public.claims (user_id, created_at desc);
 create index if not exists idx_claims_status on public.claims (status);
 create index if not exists idx_audit_created on public.admin_audit (created_at desc);
+create index if not exists idx_commissions_referrer on public.referral_commissions (referrer_id, created_at desc);
+create index if not exists idx_commissions_status on public.referral_commissions (status);
 
 -- ───────────────────────── Seguridad (RLS) ─────────────────────────
 -- Las cuentas solo LEEN sus propios datos. Todas las escrituras las hace el servidor (service role).
@@ -184,6 +235,7 @@ alter table public.settings enable row level security;
 alter table public.admin_audit enable row level security;
 alter table public.plans enable row level security;
 alter table public.payment_proofs enable row level security;
+alter table public.referral_commissions enable row level security;
 
 drop policy if exists "profiles_select_own" on public.profiles;
 create policy "profiles_select_own" on public.profiles for select
@@ -204,4 +256,8 @@ create policy "settings_select_authenticated" on public.settings for select
 drop policy if exists "plans_select_all" on public.plans;
 create policy "plans_select_all" on public.plans for select
   to anon, authenticated using (true);
+-- Comisiones: quien refirió ve las suyas.
+drop policy if exists "commissions_select_own" on public.referral_commissions;
+create policy "commissions_select_own" on public.referral_commissions for select
+  to authenticated using ((select auth.uid()) = referrer_id);
 -- admin_audit y payment_proofs: sin políticas → solo accesibles con la service role key.

@@ -3,11 +3,13 @@ import { getSupabaseAdmin } from "@/lib/server/admin";
 import { confirmLink, isEmail, publicOrigin, requireEmailConfirmation } from "@/lib/server/auth-email";
 import { fail, readJson, sameOrigin } from "@/lib/server/http";
 import { emailEnabled, escapeHtml, sendEmail } from "@/lib/server/notify";
+import { findReferrer, linkReferral } from "@/lib/server/referrals";
 
 /**
  * Registro de clientes. Supabase no envía ningún correo: los correos salen por la API de Resend.
  * - Por defecto la cuenta queda lista y el cliente entra de inmediato (se envía un correo de bienvenida).
  * - Con REQUIRE_EMAIL_CONFIRMATION=true se envía «Confirma tu cuenta» y debe abrir el enlace antes de entrar.
+ * - Código de referido opcional: la cuenta queda vinculada a quien la invitó (programa de referidos).
  */
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return fail("Origen no autorizado.", 403);
@@ -17,6 +19,10 @@ export async function POST(request: Request) {
   if (!isEmail(email)) return fail("Escribe un correo válido.", 400);
   if (password.length < 8 || password.length > 72) return fail("La contraseña debe tener entre 8 y 72 caracteres.", 400);
 
+  const rawCode = typeof body?.referralCode === "string" ? body.referralCode.trim() : "";
+  const referrer = rawCode ? await findReferrer(rawCode) : null;
+  if (rawCode && !referrer) return fail("El código de referido no existe. Revísalo o deja el campo vacío.", 400);
+
   const admin = getSupabaseAdmin();
   const origin = publicOrigin(request);
   const exists = "Ya existe una cuenta con este correo. Inicia sesión o recupera tu contraseña.";
@@ -24,6 +30,7 @@ export async function POST(request: Request) {
   if (requireEmailConfirmation() && emailEnabled()) {
     const { data, error } = await admin.auth.admin.generateLink({ type: "signup", email, password });
     if (error) return /already|exists|registered/i.test(error.message) ? fail(exists, 409) : fail("No pudimos crear la cuenta. Intenta de nuevo.", 500);
+    if (referrer) await linkReferral(data.user.id, referrer.id);
     const sent = await sendEmail(email, "Confirma tu cuenta", [
       "Gracias por registrarte. Confirma tu correo para activar tu cuenta.",
       "Si no creaste esta cuenta, ignora este mensaje.",
@@ -35,8 +42,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, confirm: true });
   }
 
-  const { error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  const { data: created, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
   if (error) return /already|exists|registered/i.test(error.message) ? fail(exists, 409) : fail("No pudimos crear la cuenta. Intenta de nuevo.", 500);
+  if (referrer) await linkReferral(created.user.id, referrer.id);
   await sendEmail(email, "Bienvenido", [
     `Tu cuenta <strong>${escapeHtml(email)}</strong> quedó creada.`,
     "Desde tu panel puedes invertir y ver tus ganancias día a día.",

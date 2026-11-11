@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AdminShell } from "@/components/admin/ui";
-import { ClientActions } from "@/components/admin/clients";
+import { ClientActions, ReferralAssign } from "@/components/admin/clients";
 import AdminInvestments from "@/components/admin/investments";
 import { formatDate, formatUsd } from "@/lib/finance";
 import { calculateEarnings } from "@/lib/rates";
@@ -26,6 +26,8 @@ export default async function AdminClientPage({ params }: { params: Promise<{ id
   const capital = active.reduce((s, i) => s + i.principal_usd, 0);
   const earnings = active.reduce((s, i) => s + calculateEarnings(i, rates, now).earnings, 0);
   const paid = own.filter(i => i.claim_status === "settled").reduce((s, i) => s + (i.claim_amount_usd ?? 0), 0);
+  const referrer = client.referred_by ? profiles.find(p => p.id === client.referred_by) : null;
+  const referred = profiles.filter(p => p.referred_by === client.id);
   return <AdminShell email={session.email} badges={badges} eyebrow="FICHA DEL CLIENTE" title={client.full_name || client.email} subtitle={<Link className="admin-link" href="/admin/clientes"><ArrowLeft size={14} /> Volver a clientes</Link>}>
     <div className="dash-body-grid">
       <section className="dash-panel"><div className="panel-heading"><h2>Datos</h2><span className={`badge-status ${client.status === "suspended" ? "claim-rejected" : "mature"}`}><i />{client.status === "suspended" ? "SUSPENDIDA" : client.role === "admin" ? "ADMINISTRADOR" : "ACTIVA"}</span></div>
@@ -48,6 +50,14 @@ export default async function AdminClientPage({ params }: { params: Promise<{ id
         <div className="panel-gap"><ClientActions client={client} isSelf={client.id === session.userId} /></div>
       </section>
     </div>
+    <section className="dash-panel panel-gap"><div className="panel-heading"><h2>Referidos</h2><Link className="admin-link" href="/admin/referidos">Ver comisiones</Link></div>
+      <ul className="info-list">
+        <li><span>Su código</span><strong><code>{client.referral_code}</code></strong></li>
+        <li><span>Lo refirió</span><strong>{referrer ? <Link className="admin-link" href={`/admin/clientes/${referrer.id}`}>{referrer.full_name || referrer.email}</Link> : "Nadie"}{referrer && client.referred_at && <small className="cell-sub">desde el {formatDate(client.referred_at)}</small>}</strong></li>
+        <li><span>Personas que refirió</span><strong>{referred.length ? referred.map((p, i) => <span key={p.id}>{i > 0 && ", "}<Link className="admin-link" href={`/admin/clientes/${p.id}`}>{p.full_name || p.email}</Link></span>) : "Ninguna"}</strong></li>
+      </ul>
+      {client.role === "user" && <div className="panel-gap"><ReferralAssign clientId={client.id} currentCode={referrer?.referral_code || ""} /></div>}
+    </section>
     <div className="panel-gap"><AdminInvestments investments={own} rates={rates} renderedAt={now} compact /></div>
   </AdminShell>;
 }

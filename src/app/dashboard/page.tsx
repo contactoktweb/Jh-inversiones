@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const supabase = (await getSupabaseServer())!;
   const [rates, {data: investments, error}, {data: claims}, {data: profile}, {data: setting}, transferImage] = await Promise.all([
     getRates(),
-    supabase.from("investments").select("id,plan_id,principal_usd,started_at,ends_at,status,payment_method,payment_reference,created_at,admin_note,payment_reported_at,plan:plans(name)")
+    supabase.from("investments").select("id,plan_id,principal_usd,started_at,ends_at,term_days,status,payment_method,payment_reference,created_at,admin_note,payment_reported_at,plan:plans(name)")
       .eq("user_id", session.userId).order("created_at",{ascending:false}),
     supabase.from("claims").select(CLAIM_COLUMNS).eq("user_id",session.userId),
     supabase.from("profiles").select("payout_details").eq("id",session.userId).maybeSingle(),

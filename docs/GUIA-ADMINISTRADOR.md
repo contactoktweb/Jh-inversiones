@@ -75,10 +75,11 @@ A la izquierda está el **menú**. En el celular se abre con el botón **☰** (
 | **Inversiones** | Ver todas las inversiones |
 | **Planes** | Los planes que se muestran en la página |
 | **Clientes** | Ver y administrar a los clientes |
+| **Referidos** | Comisiones para quienes invitan a otros clientes con su código |
 | **Actividad** | Todo lo que se ha hecho en el panel |
 | **Ajustes** | Tus datos bancarios y descargar reportes |
 
-Cuando hay algo pendiente, aparece un **número rojo** junto a *Pagos* o *Retiros*. Además, **te llega un correo** cuando un cliente avisa que te pagó o pide un retiro.
+Cuando hay algo pendiente, aparece un **número rojo** junto a *Pagos*, *Retiros* o *Referidos*. Además, **te llega un correo** cuando un cliente avisa que te pagó o pide un retiro.
 
 ![Resumen: la página de inicio del panel](manual/img/03-resumen.png)
 
@@ -101,13 +102,14 @@ Puedes cambiar la foto o el texto cuando quieras.
 
 ## 5. Lo que haces cada día
 
-Solo son **3 tareas**:
+Solo son **3 tareas** (y una semanal):
 
 | ✔ | Tarea | Dónde |
 |---|---|---|
 | 1 | Fijar la ganancia del día | **Ganancia diaria** (o la ventana que aparece al entrar) |
 | 2 | Confirmar los pagos que te avisaron | **Pagos** |
 | 3 | Pagar los retiros pendientes | **Retiros** |
+| + | Una vez por semana: pagar las comisiones por referidos | **Referidos** |
 
 En las páginas siguientes te explicamos cada una.
 
@@ -218,6 +220,9 @@ La plataforma envía correos automáticos en español, siempre desde la misma di
 |---|---|
 | Crea su cuenta | «Bienvenido» |
 | Pide cambiar su contraseña | «Restablece tu contraseña» (con un enlace que sirve una vez y vence en 1 hora) |
+| Alguien que invitó hace una inversión | «Ganaste una comisión de $…» |
+| Marcas su comisión como pagada | «Comisión pagada» (con el comprobante) |
+| Cambias el plazo de su inversión | «Plazo de retiro actualizado» (con la nueva fecha) |
 | Confirmas o rechazas su pago | «Pago confirmado» / «Pago no confirmado» (con el motivo) |
 | Registras un pago manual | «Inversión registrada» |
 | Apruebas, pagas o rechazas su retiro | «Retiro aprobado» / «Retiro desembolsado» (con el comprobante) / «Retiro rechazado» (con el motivo) |
@@ -228,7 +233,46 @@ La plataforma envía correos automáticos en español, siempre desde la misma di
 
 ---
 
-## 10. Otras cosas que puedes hacer
+## 10. Referidos y plazos de retiro
+
+### Programa de referidos
+
+Cada cliente tiene un **código** (por ejemplo `JH5A279B`) y un **enlace de invitación** en su menú **Referidos**. Quien se registra con ese código queda vinculado a quien lo invitó. Cada vez que **confirmas una inversión** de un invitado (o registras un pago manual a su nombre), quien lo invitó gana una **comisión**: un porcentaje del monto.
+
+![Registro con código de referido](manual/img/33-registro-con-codigo.png)
+
+**Fijar el porcentaje:** en **Referidos → Comisión por referido**, escribe el porcentaje (al empezar es **5 %**) y pulsa **Guardar porcentaje**. Con **0** el programa queda pausado.
+
+> Ejemplo: con 5 %, si un invitado invierte $1,000 y confirmas su pago, quien lo invitó gana **$50**.
+
+**Pagar una comisión:**
+1. Entra a **Referidos**. En *Por pagar* ves quién gana, cuánto y **dónde pagarle**.
+2. Hazle el pago desde tu banco.
+3. Pulsa **Marcar pagada**, escribe el **comprobante** y pulsa **Confirmar pago**. El cliente recibe un correo.
+
+![Comisiones por referidos](manual/img/34-admin-referidos.png)
+
+**Bueno saber:**
+- Los **pagos de prueba** no generan comisión. Si **cancelas** una inversión, su comisión pendiente se **anula** sola.
+- Si una comisión no corresponde, pulsa **Anular** y escribe el motivo.
+- ¿Un cliente olvidó poner el código al registrarse? En su ficha (**Clientes → su nombre → Referidos**) escribe el código de quien lo invitó y pulsa **Guardar referido**.
+
+### Cambiar el plazo mínimo de retiro de una inversión
+
+Por defecto el cliente puede pedir su retiro a los **30 días**. Puedes ponerle **otro plazo a una inversión en particular**, más corto o más largo:
+
+1. Entra a **Inversiones** y pulsa **Plazo** en la inversión.
+2. Escribe el nuevo plazo **en días** y pulsa **Guardar plazo**.
+
+![Cambiar el plazo de una inversión](manual/img/36-cambiar-plazo.png)
+
+- Los días se cuentan **desde el inicio** de la inversión. El cliente recibe un correo con la **nueva fecha** de retiro.
+- Al **registrar un pago manual** también puedes escribir el plazo (campo *Plazo mínimo de retiro*).
+- Si la inversión tiene un **retiro en curso**, primero resuélvelo en *Retiros*.
+
+---
+
+## 11. Otras cosas que puedes hacer
 
 **Un cliente te pagó en efectivo o por fuera de la página**
 1. Pídele que cree su cuenta en la página.
@@ -254,13 +298,19 @@ Ve a **Ajustes → Exportar datos**. Los archivos se abren con Excel o Google Sh
 
 ---
 
-## 11. Preguntas rápidas
+## 12. Preguntas rápidas
 
 **¿Tengo que escribir mi contraseña cada vez?**
 No. La sesión queda guardada en tu navegador: pulsa **MI PANEL** en el encabezado. Solo vuelves a escribirla si cerraste sesión o entras desde otro dispositivo.
 
 **¿El administrador ve el comprobante que sube el cliente?**
 Sí: en **Pagos → Ver comprobante** y adjunto en el correo «Transferencia por verificar» (sección 7).
+
+**¿Puedo dejar que un cliente retire antes (o después) de los 30 días?**
+Sí: **Inversiones → Plazo** en esa inversión (sección 10).
+
+**¿Cómo gana dinero quien invita a otros?**
+Con su código de referido: gana el porcentaje que fijes en **Referidos** de cada inversión confirmada de sus invitados. Tú le pagas y lo marcas como pagado (sección 10).
 
 **No puedo entrar.**
 Revisa que el correo esté bien escrito. Si no recuerdas la contraseña, usa **¿Olvidaste tu contraseña?**
@@ -279,10 +329,11 @@ Que revise su carpeta de spam y que confirme que escribió bien su correo. Si la
 
 ---
 
-## 12. Reglas de oro
+## 13. Reglas de oro
 
 1. Fija la ganancia **todos los días**.
 2. Confirma un pago **solo cuando veas el dinero** en tu banco.
 3. Marca un retiro como pagado **solo después de pagarlo**, y siempre con el comprobante.
 4. **No compartas tu contraseña.** Si alguien te ayuda, crea una cuenta de administrador para esa persona.
-5. Descarga los reportes **cada mes** como respaldo.
+5. Paga las **comisiones por referidos** siempre con comprobante.
+6. Descarga los reportes **cada mes** como respaldo.

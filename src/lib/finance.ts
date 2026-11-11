@@ -14,6 +14,8 @@ export type Investment = {
   principal_usd: number;
   started_at: string;
   ends_at: string;
+  /** Plazo mínimo de retiro en días (30 por defecto, editable por el administrador). */
+  term_days?: number;
   status: string;
   claim_status?: string | null;
   claim_requested_at?: string | null;

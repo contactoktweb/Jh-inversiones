@@ -52,9 +52,11 @@ Configuración en modo de prueba:
 
 1. Crea un proyecto en [supabase.com/dashboard](https://supabase.com/dashboard). Elige una región cercana a los clientes, por ejemplo *South America (São Paulo)* o *East US*.
 2. **SQL Editor → New query** → pega **todo** `supabase/schema.sql` → **Run**. Debe terminar con *Success. No rows returned*.
-   - Crea: `profiles`, `plans`, `investments`, `daily_rates`, `claims`, `settings` y `admin_audit`, con sus restricciones e índices, la RLS y el disparador que crea el perfil al registrarse. Deja cargados los 3 planes iniciales (Impulso 50, Órbita 500, Horizonte 2.000 USD), que luego el administrador edita en **Planes**.
+   - Crea: `profiles`, `plans`, `investments`, `payment_proofs`, `referral_commissions`, `daily_rates`, `claims`, `settings` y `admin_audit`, con sus restricciones e índices, la RLS y el disparador que crea el perfil al registrarse. Deja cargados los 3 planes iniciales (Impulso 50, Órbita 500, Horizonte 2.000 USD), que luego el administrador edita en **Planes**.
    - Es re-ejecutable: si más adelante hay una versión nueva, se vuelve a pegar y ejecutar sin perder datos.
-3. Comprueba en **Table Editor** que aparecen las 8 tablas (incluida `payment_proofs`, donde se guardan los comprobantes).
+3. Comprueba en **Table Editor** que aparecen las 9 tablas (incluidas `payment_proofs`, donde se guardan los comprobantes, y `referral_commissions`, las comisiones por referidos).
+
+> **Actualizar una instalación existente** (por ejemplo, al agregar referidos y plazos por inversión): vuelve a pegar y ejecutar **todo** `supabase/schema.sql`. Conserva los datos: a cada cuenta existente le asigna su código de referido y deja las inversiones existentes con plazo de 30 días.
 
 ### 2.2 Claves (para Vercel)
 

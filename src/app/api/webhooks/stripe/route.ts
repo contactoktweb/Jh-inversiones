@@ -5,6 +5,7 @@ import { MIN_INVESTMENT_USD, MIN_TERM_DAYS } from "@/lib/rates";
 import { getPlans } from "@/lib/server/plans";
 import { getSupabaseAdmin } from "@/lib/server/admin";
 import { paymentMethods, paymentsApproved } from "@/lib/config";
+import { createReferralCommission } from "@/lib/server/referrals";
 
 export const runtime="nodejs";
 export async function POST(request:Request){
@@ -31,12 +32,13 @@ export async function POST(request:Request){
   const ends=new Date(now.getTime()+MIN_TERM_DAYS*86_400_000);
   try{
     const admin=getSupabaseAdmin();
-    const {error}=await admin.from("investments").insert({
+    const {data:created,error}=await admin.from("investments").insert({
       user_id:userId,plan_id:plan.id,principal_usd:amount,
       started_at:now.toISOString(),ends_at:ends.toISOString(),
       payment_method:"stripe",payment_reference:session.id,status:"active",confirmed_at:now.toISOString(),
-    });
+    }).select("id").maybeSingle();
     if(error&&error.code!=="23505")throw error;
+    if(created)await createReferralCommission(created.id);
     return NextResponse.json({received:true});
   }catch(e){console.error("webhook_persist_error",e instanceof Error?e.message:"Error desconocido");return NextResponse.json({error:"No se pudo confirmar el registro."},{status:500});}
 }

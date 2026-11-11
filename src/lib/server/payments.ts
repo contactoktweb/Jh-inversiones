@@ -27,7 +27,8 @@ export class PaymentError extends Error {
 }
 
 const DAY = 86_400_000;
-const termDates = (from = new Date()) => ({ started_at: from.toISOString(), ends_at: new Date(from.getTime() + MIN_TERM_DAYS * DAY).toISOString() });
+/** Inicio y fecha de retiro según el plazo de la inversión (term_days). */
+export const termDates = (from = new Date(), termDays = MIN_TERM_DAYS) => ({ started_at: from.toISOString(), ends_at: new Date(from.getTime() + termDays * DAY).toISOString(), term_days: termDays });
 
 /** Código corto y legible para que el cliente lo ponga en la descripción de su transferencia. */
 export function transferReference() {
@@ -83,18 +84,21 @@ export async function startPayment(session: Session, amountUsd: number, method: 
 /** El administrador confirma que recibió el dinero: la inversión se activa y el plazo empieza a contar desde hoy. */
 export async function confirmPayment(investmentId: string, adminId: string) {
   const now = new Date();
-  const { data, error } = await getSupabaseAdmin().from("investments")
-    .update({ status: "active", ...termDates(now), confirmed_at: now.toISOString(), confirmed_by: adminId })
+  const admin = getSupabaseAdmin();
+  // Conserva el plazo que el administrador haya fijado a esta inversión antes de confirmarla.
+  const { data: current } = await admin.from("investments").select("term_days").eq("id", investmentId).maybeSingle();
+  const { data, error } = await admin.from("investments")
+    .update({ status: "active", ...termDates(now, current?.term_days ?? MIN_TERM_DAYS), confirmed_at: now.toISOString(), confirmed_by: adminId })
     .eq("id", investmentId).eq("status", "pending_payment").select("id,user_id,principal_usd,payment_reference").maybeSingle();
   if (error) throw error;
   return data;
 }
 
 /** Inversión registrada a mano por el administrador (pago recibido por fuera de la plataforma). */
-export async function createManualInvestment(userId: string, amountUsd: number, reference: string, startedAt: Date, adminId: string, note: string | null) {
+export async function createManualInvestment(userId: string, amountUsd: number, reference: string, startedAt: Date, adminId: string, note: string | null, termDays = MIN_TERM_DAYS) {
   const plan = await resolvePlan(amountUsd);
   const { data, error } = await getSupabaseAdmin().from("investments").insert({
-    user_id: userId, plan_id: plan.id, principal_usd: amountUsd, ...termDates(startedAt),
+    user_id: userId, plan_id: plan.id, principal_usd: amountUsd, ...termDates(startedAt, termDays),
     payment_method: "manual", payment_reference: reference, status: "active",
     confirmed_at: new Date().toISOString(), confirmed_by: adminId, admin_note: note,
   }).select("id").single();

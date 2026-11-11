@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/server/audit";
 import { fail, guard, isUuid, optionalText, readJson } from "@/lib/server/http";
 import { sendEmail } from "@/lib/server/notify";
 import { confirmPayment } from "@/lib/server/payments";
+import { createReferralCommission } from "@/lib/server/referrals";
 
 export const runtime="nodejs";
 
@@ -28,6 +29,7 @@ export async function POST(request:Request){
       const confirmed=await confirmPayment(investment.id,session.userId);
       if(!confirmed)return fail("Esta inversión ya no está pendiente de pago.",409);
       await logAudit(session,"payment.confirm","investment",investment.id,{amount_usd:Number(investment.principal_usd),reference:investment.payment_reference,note});
+      await createReferralCommission(investment.id);
       await sendEmail(owner?.email||"","Pago confirmado",[`Confirmamos tu pago de <strong>${amount}</strong> (referencia ${investment.payment_reference}).`,"Tu inversión ya está activa y empieza a sumar ganancias desde hoy."],{label:"Ver mi inversión",path:"/dashboard"});
       return NextResponse.json({message:`Pago confirmado. La inversión de ${amount} quedó activa.`});
     }

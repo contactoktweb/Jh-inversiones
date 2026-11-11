@@ -53,6 +53,22 @@ describe("cálculo de ganancias", () => {
     expect(ready.canWithdraw).toBe(true);
     expect(ready.termProgress).toBe(1);
   });
+  it("usa el plazo propio de cada inversión (term_days) para habilitar el retiro", () => {
+    const short = calculateEarnings(position(6, { term_days: 5 }), {}, NOW);
+    expect(short.canWithdraw).toBe(true);
+    expect(short.termDays).toBe(5);
+    const long = calculateEarnings(position(40, { term_days: 60 }), {}, NOW);
+    expect(long.canWithdraw).toBe(false);
+    expect(long.daysRemaining).toBe(20);
+    expect(long.termProgress).toBeCloseTo(40 / 60, 6);
+  });
+  it("sin term_days deduce el plazo de la fecha de retiro", () => {
+    const started = new Date(NOW - 10 * DAY).toISOString();
+    const ends = new Date(NOW - 10 * DAY + 7 * DAY).toISOString();
+    const calc = calculateEarnings({ principal_usd: 100, started_at: started, ends_at: ends, status: "active" }, {}, NOW);
+    expect(calc.termDays).toBe(7);
+    expect(calc.canWithdraw).toBe(true);
+  });
   it("congela las ganancias en la fecha de la solicitud de retiro", () => {
     const requestedAt = new Date(NOW - 5 * DAY).toISOString();
     const frozen = calculateEarnings(position(40, { claim_status: "pending", claim_requested_at: requestedAt }), {}, NOW);

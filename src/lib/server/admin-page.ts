@@ -9,5 +9,5 @@ export async function requireAdminPage(path: string) {
   if (!session) redirect(`/acceso?rol=admin&next=${encodeURIComponent(path)}`);
   if (session.role !== "admin") redirect("/dashboard");
   const counts = await loadAdminCounts();
-  return { session, badges: { "/admin/pagos": counts.pendingPayments, "/admin/retiros": counts.pendingClaims } };
+  return { session, badges: { "/admin/pagos": counts.pendingPayments, "/admin/retiros": counts.pendingClaims, "/admin/referidos": counts.pendingCommissions } };
 }

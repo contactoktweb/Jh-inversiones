@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Ban, CircleCheck, Clock3, Download, Image as ImageIcon, Plus, Search, X } from "lucide-react";
 import { formatDate, formatDateTime, formatUsd, PAYMENT_METHOD_LABELS, type Investment } from "@/lib/finance";
-import { MIN_INVESTMENT_USD } from "@/lib/rates";
+import { MAX_TERM_DAYS, MIN_INVESTMENT_USD, MIN_TERM_DAYS } from "@/lib/rates";
 import { ActionDialog, AnimatePresence, Feedback, Filters, InvestmentBadge, matches, useAdminAction, useDialog } from "./ui";
 
 type Dialog = { kind: "confirm" | "reject" | "proof"; item: Investment };
@@ -14,7 +14,8 @@ export default function AdminPayments({ investments, clientEmails }: { investmen
   const dialog = useDialog<Dialog>();
   const [method, setMethod] = useState<"all" | "test" | "transfer" | "manual" | "stripe">("all");
   const [query, setQuery] = useState("");
-  const [form, setForm] = useState({ email: "", amount: "", reference: "", startedAt: "", note: "" });
+  const EMPTY = { email: "", amount: "", reference: "", startedAt: "", termDays: "", note: "" };
+  const [form, setForm] = useState(EMPTY);
   // Primero las que el cliente ya avisó que pagó (las más antiguas arriba), luego las que aún no avisa.
   const pending = investments.filter(i => i.status === "pending_payment").sort((a, b) =>
     a.payment_reported_at && b.payment_reported_at ? a.payment_reported_at.localeCompare(b.payment_reported_at) : a.payment_reported_at ? -1 : b.payment_reported_at ? 1 : 0);
@@ -36,13 +37,14 @@ export default function AdminPayments({ investments, clientEmails }: { investmen
 
     <section className="dash-panel panel-gap" id="manual"><div className="panel-heading"><h2>Registrar un pago manual</h2><span><Plus size={15} /> Pago recibido por fuera de la plataforma</span></div>
       <p className="chart-note top-note">Úsalo si un cliente te pagó en efectivo, por otro banco o por cualquier medio externo. El cliente debe tener una cuenta creada. La inversión queda activa desde la fecha de inicio que indiques.</p>
-      <form className="form-grid" onSubmit={async e => { e.preventDefault(); if (await manual.run("/api/admin/investments", { action: "create", email: form.email, amountUsd: Number(form.amount), reference: form.reference, startedAt: form.startedAt, note: form.note })) setForm({ email: "", amount: "", reference: "", startedAt: "", note: "" }); }}>
+      <form className="form-grid" onSubmit={async e => { e.preventDefault(); if (await manual.run("/api/admin/investments", { action: "create", email: form.email, amountUsd: Number(form.amount), reference: form.reference, startedAt: form.startedAt, termDays: form.termDays ? Number(form.termDays) : undefined, note: form.note })) setForm(EMPTY); }}>
         <label>Correo del cliente<input required type="email" list="client-emails" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="cliente@correo.com" /></label>
         <datalist id="client-emails">{clientEmails.map(e => <option key={e} value={e} />)}</datalist>
         <label>Monto (USD)<input required type="number" min={MIN_INVESTMENT_USD} step={1} value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} placeholder="500" /></label>
         <label>Referencia del pago<input required maxLength={80} value={form.reference} onChange={e => setForm({ ...form, reference: e.target.value })} placeholder="N.º de transferencia o recibo" /></label>
         <label>Fecha de inicio (opcional)<input type="date" value={form.startedAt} onChange={e => setForm({ ...form, startedAt: e.target.value })} /></label>
-        <label className="span-2">Nota interna (opcional)<input maxLength={500} value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} /></label>
+        <label>Plazo mínimo de retiro (días)<input type="number" min={1} max={MAX_TERM_DAYS} step={1} value={form.termDays} onChange={e => setForm({ ...form, termDays: e.target.value })} placeholder={`${MIN_TERM_DAYS} (por defecto)`} /></label>
+        <label>Nota interna (opcional)<input maxLength={500} value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} /></label>
         <div className="span-2 form-actions"><button className="rate-primary" disabled={manual.busy}><Plus size={16} />{manual.busy ? "Registrando…" : "Registrar inversión"}</button>{manual.message && <p role="status" className={`claim-feedback ${manual.error ? "error" : ""}`}>{manual.message}</p>}</div>
       </form>
     </section>

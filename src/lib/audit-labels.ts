@@ -1,0 +1,26 @@
+// Nombres legibles de las acciones del registro de actividad (panel y CSV).
+export const AUDIT_LABELS: Record<string, string> = {
+  "rate.set": "Fijó la tasa diaria",
+  "payment.confirm": "Confirmó un pago",
+  "payment.reject": "Rechazó un pago",
+  "investment.create_manual": "Registró una inversión manual",
+  "investment.cancel": "Canceló una inversión",
+  "investment.term": "Cambió el plazo mínimo de retiro",
+  "claim.approved": "Aprobó un retiro",
+  "claim.settled": "Marcó un retiro como desembolsado",
+  "claim.rejected": "Rechazó un retiro",
+  "user.suspend": "Suspendió una cuenta",
+  "user.activate": "Reactivó una cuenta",
+  "user.make_admin": "Dio rol de administrador",
+  "user.remove_admin": "Quitó rol de administrador",
+  "settings.update": "Actualizó los ajustes",
+  "plan.create": "Creó un plan",
+  "plan.update": "Editó un plan",
+  "plan.hide": "Ocultó un plan",
+  "plan.show": "Volvió a mostrar un plan",
+  "plan.delete": "Eliminó un plan",
+  "referral.paid": "Pagó una comisión por referido",
+  "referral.cancelled": "Anuló una comisión por referido",
+  "referral.assign": "Cambió quién refirió a un cliente",
+};
+export const auditLabel = (action: string) => AUDIT_LABELS[action] || action;

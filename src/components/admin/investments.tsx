@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Ban, Download, Search, Wallet } from "lucide-react";
+import { Ban, CalendarClock, Download, Search, Wallet } from "lucide-react";
 import { formatDate, formatUsd, PAYMENT_METHOD_LABELS, type Investment } from "@/lib/finance";
-import { calculateEarnings, type DailyRates } from "@/lib/rates";
+import { calculateEarnings, MAX_TERM_DAYS, MIN_TERM_DAYS, type DailyRates } from "@/lib/rates";
 import { ActionDialog, AnimatePresence, ClaimBadge, Feedback, Filters, InvestmentBadge, matches, useAdminAction, useDialog } from "./ui";
 
 type Tab = "active" | "pending_payment" | "closed" | "cancelled" | "all";
@@ -12,6 +12,7 @@ type Tab = "active" | "pending_payment" | "closed" | "cancelled" | "all";
 export default function AdminInvestments({ investments, rates, renderedAt, compact = false }: { investments: Investment[]; rates: DailyRates; renderedAt: number; compact?: boolean }) {
   const action = useAdminAction();
   const dialog = useDialog<Investment>();
+  const termDialog = useDialog<Investment & { calc: ReturnType<typeof calculateEarnings> }>();
   const [tab, setTab] = useState<Tab>(compact ? "all" : "active");
   const [query, setQuery] = useState("");
   const rows = investments.map(i => ({ ...i, calc: calculateEarnings(i, rates, renderedAt) }));
@@ -31,13 +32,17 @@ export default function AdminInvestments({ investments, rates, renderedAt, compa
             <td>{PAYMENT_METHOD_LABELS[r.payment_method || ""] || r.payment_method}<small className="cell-sub"><code>{r.payment_reference}</code></small></td>
             <td>{r.status === "pending_payment" ? "—" : formatDate(r.started_at)}</td><td>{r.calc.daysElapsed}</td>
             <td className="gain-value">{r.status === "active" || r.status === "closed" ? `+${formatUsd(r.calc.earnings)}` : "—"}</td>
-            <td>{r.status === "active" ? formatDate(r.calc.availableAt) : "—"}</td>
+            <td>{r.status === "active" ? formatDate(r.calc.availableAt) : "—"}{(r.status === "active" || r.status === "pending_payment") && <small className={`cell-sub${r.calc.termDays !== MIN_TERM_DAYS ? " term-custom" : ""}`}>Plazo: {r.calc.termDays} días</small>}</td>
             <td><InvestmentBadge item={r} />{r.claim_status && <div><ClaimBadge status={r.claim_status} /></div>}{r.admin_note && <small className="cell-sub">{r.admin_note}</small>}</td>
-            <td>{(r.status === "active" || r.status === "pending_payment") && <div className="table-actions"><button className="act-danger" disabled={action.busy} onClick={() => dialog.open(r)}><Ban size={14} /> Cancelar</button></div>}</td></tr>)}
+            <td>{(r.status === "active" || r.status === "pending_payment") && <div className="table-actions">{r.claim_status !== "pending" && r.claim_status !== "approved" && <button className="act-primary" disabled={action.busy} onClick={() => termDialog.open(r)}><CalendarClock size={14} /> Plazo</button>}<button className="act-danger" disabled={action.busy} onClick={() => dialog.open(r)}><Ban size={14} /> Cancelar</button></div>}</td></tr>)}
         </tbody></table></div>}
     </section>
+    <AnimatePresence>{termDialog.state && <ActionDialog title="Cambiar plazo mínimo de retiro" tone="primary" confirmLabel="Guardar plazo" onClose={termDialog.close}
+      description={<><p>Inversión de <strong>{formatUsd(termDialog.state.principal_usd)}</strong> de {termDialog.state.owner_name || termDialog.state.owner_email}. Plazo actual: <strong>{termDialog.state.calc.termDays} días</strong>{termDialog.state.status === "active" ? <> (retiro desde el {formatDate(termDialog.state.calc.availableAt)})</> : <> (empezará a contar cuando confirmes el pago)</>}.</p><p>Los días se cuentan desde el inicio de la inversión. Si el nuevo plazo ya se cumplió, el cliente podrá solicitar el retiro de inmediato. El cliente recibe un correo con la nueva fecha.</p></>}
+      fields={[{ name: "termDays", label: "Nuevo plazo mínimo (días)", type: "number", min: 1, max: MAX_TERM_DAYS, required: true, defaultValue: String(termDialog.state.calc.termDays), hint: `Por defecto ${MIN_TERM_DAYS} días. Entre 1 y ${MAX_TERM_DAYS}.` }, { name: "note", label: "Nota interna (opcional)" }]}
+      onConfirm={v => action.run("/api/admin/investments", { action: "term", investmentId: termDialog.state!.id, termDays: Number(v.termDays), note: v.note })} />}</AnimatePresence>
     <AnimatePresence>{dialog.state && <ActionDialog title="Cancelar inversión" tone="danger" confirmLabel="Cancelar inversión" onClose={dialog.close}
-      description={<><p>La inversión de <strong>{formatUsd(dialog.state.principal_usd)}</strong> de {dialog.state.owner_email} dejará de generar ganancias y no podrá solicitar retiro.</p><p>Úsalo solo para devoluciones o errores. Si ya pagaste al cliente, usa mejor el flujo de Retiros.</p></>}
+      description={<><p>La inversión de <strong>{formatUsd(dialog.state.principal_usd)}</strong> de {dialog.state.owner_email} dejará de generar ganancias y no podrá solicitar retiro.</p><p>Úsalo solo para devoluciones o errores. Si ya pagaste al cliente, usa mejor el flujo de Retiros. Si generó una comisión por referido aún no pagada, se anula.</p></>}
       fields={[{ name: "note", label: "Motivo", required: true, multiline: true }]}
       onConfirm={v => action.run("/api/admin/investments", { action: "cancel", investmentId: dialog.state!.id, note: v.note })} />}</AnimatePresence>
   </>;
