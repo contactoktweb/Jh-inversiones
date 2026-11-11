@@ -57,6 +57,10 @@ Antes de recibir a tus primeros clientes:
 
 **La primera vez:** pulsa **¿No tienes cuenta? Regístrate** con tu correo de administrador y crea tu contraseña. Entrarás directo al panel de administración.
 
+- **La sesión queda guardada:** después de entrar una vez no tienes que escribir la contraseña de nuevo en ese navegador. El encabezado de la página queda **fijo arriba** y, con la sesión abierta, muestra **MI PANEL** para volver al panel con un clic. Si abres *Iniciar sesión* con la sesión abierta, te lleva directo al panel. En una computadora compartida, cierra sesión al terminar.
+
+![Encabezado fijo con «Mi panel»](manual/img/31-encabezado-mi-panel.png)
+
 - **¿Olvidaste tu contraseña?** Te llega un enlace por correo para crear una nueva.
 - **Cerrar sesión:** icono de salida, abajo en el menú lateral.
 - **Desde el celular:** el menú se abre con el botón ☰ arriba a la derecha.
@@ -130,7 +134,7 @@ Así funciona el pago por transferencia:
 1. El cliente elige el monto y **Transferencia bancaria**. La plataforma le muestra tu **foto con los datos de pago**, tus datos bancarios y un **código de referencia** (por ejemplo `JH-7KQ2MD`) que debe escribir en la descripción de su transferencia. La inversión queda en **Pago pendiente** y no gana nada todavía.
 2. El cliente hace la transferencia y pulsa **«Ya realicé la transferencia»**. Puede añadir el n.º de operación y una **foto del comprobante**.
 3. **Te llega un correo** «Transferencia por verificar» con el cliente, el monto, la referencia y el comprobante adjunto. En *Pagos* esa fila aparece como **AVISÓ QUE PAGÓ** (las que aún no avisan dicen *AÚN NO AVISA*).
-4. Pulsa **Ver comprobante** para ver la foto que envió el cliente.
+4. Pulsa **Ver comprobante** para ver la foto que envió el cliente. La misma foto llega **adjunta** en el correo «Transferencia por verificar». Si el cliente no subió foto (es opcional), la fila no tiene ese botón: verifica con la referencia y el monto. Solo los administradores pueden ver los comprobantes.
 
 ![Comprobante del cliente](manual/img/16-comprobante.png)
 
@@ -367,7 +371,9 @@ Cada día la inversión gana **capital × porcentaje de ese día** (interés sim
 
 ## 17. Correos automáticos
 
-Todos los correos salen desde la dirección de la plataforma (Resend), en español.
+Todos los correos salen desde la dirección de la plataforma (Resend), en español. En **Ajustes**, *Correos de aviso* debe decir **Activos**.
+
+> Mientras la plataforma use la dirección de prueba de Resend, los correos solo llegan al correo dueño de la cuenta de Resend; los clientes los reciben cuando se conecte el dominio propio.
 
 | Cuándo | Quién lo recibe |
 |---|---|
@@ -411,8 +417,14 @@ Que revise la carpeta de spam o correo no deseado y que confirme que escribió b
 **Un cliente olvidó su contraseña.**
 Que use **¿Olvidaste tu contraseña?** en la página de inicio de sesión.
 
-**Quiero que otra persona me ayude a administrar.**
-Que se registre como cliente; luego ve a *Clientes → su ficha → Hacer administrador*.
+**Quiero que otra persona me ayude a administrar (o una cuenta de prueba para una demostración).**
+Que se registre como cliente; luego ve a *Clientes → su ficha → Hacer administrador*. Al terminar, *Quitar administrador*. Una cuenta de prueba trabaja sobre los datos reales.
+
+**¿Tengo que escribir mi contraseña cada vez?**
+No: la sesión queda guardada en tu navegador. Pulsa **MI PANEL** en el encabezado.
+
+**¿Dónde veo el comprobante que subió un cliente?**
+En *Pagos → Ver comprobante* y adjunto en el correo «Transferencia por verificar».
 
 **Los datos bancarios de un retiro están incompletos.**
 **Recházalo** con el motivo: el cliente corrige sus datos y lo vuelve a pedir.

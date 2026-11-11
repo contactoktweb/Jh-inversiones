@@ -499,7 +499,7 @@
 .bm-end .bm-button{margin:auto}
 .bm-end-sun{position:absolute;z-index:0;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,#184ed4 0%,#1337a5 44%,transparent 70%);right:-260px;top:-160px;filter:blur(3px);pointer-events:none}
 
-/* Footer & Mandatory K&T Branding */
+/* Footer */
 .bm-footer{background:#04092b;color:#fff;padding:70px 0 28px}
 .bm-footer-main{display:flex;justify-content:space-between;gap:80px;padding-bottom:65px}
 .bm-footer-about{max-width:300px}
@@ -514,32 +514,6 @@
 .bm-footer-bottom p{max-width:270px;line-height:1.6;margin:0}
 .bm-footer-top-btn{font-weight:700;color:#dde6ff;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-subtitle);letter-spacing:.05em;text-transform:uppercase}
 .bm-footer-top-btn:hover{color:var(--bm-yellow)}
-
-/* Mandatory Branding "Desarrollado por K&T" (Rule 29-32) */
-.bm-kt-link{
-  display:inline-flex;
-  align-items:center;
-  gap:7px;
-  color:#ffffff;
-  font-family:var(--font-subtitle);
-  font-size:12px;
-  font-weight:700;
-  letter-spacing:.06em;
-  text-decoration:none;
-  padding:5px 10px;
-  border-radius:6px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  transition:all .2s ease;
-}
-.bm-kt-link:hover{
-  background:rgba(255,255,255,.14);
-  color:#ffffff;
-}
-.bm-heart-icon{
-  color:#ffffff;
-  fill:#ffffff;
-}
 
 @keyframes bm-breathe{50%{transform:scale(1.035) rotate(-10deg)}}
 @keyframes bm-draw{to{stroke-dashoffset:0}}
