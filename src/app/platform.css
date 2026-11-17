@@ -404,3 +404,8 @@
 .term-custom{color:#1748c4;font-weight:700}
 .modal-hint{display:block;margin-top:6px;font-size:11.5px;color:#6b7593;font-weight:500}
 @media(max-width:760px){.referral-hero{grid-template-columns:1fr}}
+
+/* Menú lateral en pantallas poco altas: se puede desplazar para llegar a «Cerrar sesión». */
+.dash-sidebar{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.dash-sidebar .dash-nav{flex-shrink:0}
+@media(max-height:820px){.dash-sidebar .sidebar-help{display:none}}

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { createUser, newSession, service } from "./helpers";
+import { createUser, login, newSession, service } from "./helpers";
 
 test.describe.serial("Gestión administrativa", () => {
   const clientEmail = `cliente-${Date.now()}@e2e.test`;
@@ -107,5 +107,21 @@ test.describe.serial("Gestión administrativa", () => {
       expect(res?.status(), path).toBe(200);
     }
     expect(errors).toEqual([]);
+  });
+  test("en una pantalla poco alta el menú lateral se desplaza hasta «Cerrar sesión»", async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 520 } });
+    const page = await context.newPage();
+    page.on("dialog", d => d.accept());
+    await login(page, "admin@e2e.test");
+    await page.goto("/admin/referidos");
+    const sidebar = page.locator(".dash-sidebar");
+    expect(await sidebar.evaluate(el => getComputedStyle(el).overflowY)).toBe("auto");
+    const signOut = sidebar.getByRole("button", { name: "Cerrar sesión" });
+    await signOut.scrollIntoViewIfNeeded();
+    await expect(signOut).toBeInViewport();
+    await signOut.click();
+    await page.goto("/admin");
+    await page.waitForURL(/\/acceso/);
+    await context.close();
   });
 });
