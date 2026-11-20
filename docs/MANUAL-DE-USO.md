@@ -140,7 +140,7 @@ Así funciona el pago por transferencia:
 
 ![Comprobante del cliente](manual/img/16-comprobante.png)
 
-5. Revisa tu banco y busca la transferencia con ese código y ese monto. Si llegó, pulsa **Confirmar pago** → **Sí, confirmar pago**.
+5. Revisa tu banco y busca la transferencia con ese código y ese monto. Si llegó, pulsa **Confirmar pago**: la ventana vuelve a mostrar **la foto del comprobante** y el n.º de operación del cliente, para que compares antes de aceptar. Pulsa **Sí, confirmar pago**.
 
 ![Confirmar pago](manual/img/06-confirmar-pago.png)
 

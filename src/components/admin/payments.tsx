@@ -8,6 +8,16 @@ import { ActionDialog, AnimatePresence, Feedback, Filters, InvestmentBadge, matc
 
 type Dialog = { kind: "confirm" | "reject" | "proof"; item: Investment };
 
+/** Lo que avisó el cliente (foto del comprobante, n.º de operación) dentro de las ventanas de confirmar o rechazar. */
+function ClientReport({ item }: { item: Investment }) {
+  if (!item.payment_reported_at) return <p className="report-missing"><Clock3 size={14} /> El cliente <strong>aún no avisa</strong> que pagó: no hay comprobante. Verifica en tu banco con la referencia y el monto.</p>;
+  return <div className="dialog-proof">
+    <p><strong>Avisó que pagó</strong> el {formatDateTime(item.payment_reported_at)}{item.payment_report_note && <> · «{item.payment_report_note}»</>}</p>
+    {item.has_proof ? <a href={`/api/admin/payments/proof?id=${item.id}`} target="_blank" rel="noreferrer" title="Abrir en grande"><img src={`/api/admin/payments/proof?id=${item.id}`} alt="Comprobante enviado por el cliente" /></a>
+      : <p className="report-missing">El cliente no adjuntó foto del comprobante.</p>}
+  </div>;
+}
+
 export default function AdminPayments({ investments, clientEmails }: { investments: Investment[]; clientEmails: string[] }) {
   const action = useAdminAction();
   const manual = useAdminAction();
@@ -30,7 +40,7 @@ export default function AdminPayments({ investments, clientEmails }: { investmen
       {pending.length === 0 ? <div className="empty-state"><CircleCheck size={32} /><h3>No hay pagos pendientes</h3><p>Las inversiones registradas por transferencia aparecerán aquí.</p></div> :
         <div className="table-scroll"><table className="invest-table"><thead><tr><th>REGISTRADA</th><th>CLIENTE</th><th>MONTO</th><th>REFERENCIA</th><th>AVISO DEL CLIENTE</th><th>ACCIONES</th></tr></thead><tbody>
           {pending.map(i => <tr key={i.id}><td>{formatDateTime(i.created_at || i.started_at)}</td><td><span className="cell-strong">{i.owner_name || i.owner_email}</span>{i.owner_name && <small className="cell-sub">{i.owner_email}</small>}</td><td className="cell-strong">{formatUsd(i.principal_usd)}</td><td><code>{i.payment_reference}</code></td>
-            <td><div className="report-cell">{i.payment_reported_at ? <><span className="report-flag"><CircleCheck size={12} /> AVISÓ QUE PAGÓ</span><small className="cell-sub">{formatDateTime(i.payment_reported_at)}</small>{i.payment_report_note && <small className="cell-sub">«{i.payment_report_note}»</small>}{i.has_proof ? <button type="button" className="proof-link" onClick={() => dialog.open({ kind: "proof", item: i })}><ImageIcon size={13} /> Ver comprobante</button> : <small className="cell-sub">Sin comprobante</small>}</> : <span className="report-flag waiting"><Clock3 size={12} /> AÚN NO AVISA</span>}</div></td>
+            <td><div className="report-cell">{i.payment_reported_at ? <><span className="report-flag"><CircleCheck size={12} /> AVISÓ QUE PAGÓ</span><small className="cell-sub">{formatDateTime(i.payment_reported_at)}</small>{i.payment_report_note && <small className="cell-sub">«{i.payment_report_note}»</small>}{i.has_proof ? <button type="button" className="proof-thumb" onClick={() => dialog.open({ kind: "proof", item: i })} aria-label="Ver comprobante"><img src={`/api/admin/payments/proof?id=${i.id}`} alt="" loading="lazy" /><span><ImageIcon size={13} /> Ver comprobante</span></button> : <small className="cell-sub">Sin foto del comprobante</small>}</> : <span className="report-flag waiting"><Clock3 size={12} /> AÚN NO AVISA</span>}</div></td>
             <td><div className="table-actions"><button className="act-success" disabled={action.busy} onClick={() => dialog.open({ kind: "confirm", item: i })}><CircleCheck size={14} /> Confirmar pago</button><button className="act-danger" disabled={action.busy} onClick={() => dialog.open({ kind: "reject", item: i })}><Ban size={14} /> Rechazar</button></div></td></tr>)}
         </tbody></table></div>}
     </section>
@@ -70,11 +80,11 @@ export default function AdminPayments({ investments, clientEmails }: { investmen
         </motion.div>
       : dialog.state.kind === "confirm"
       ? <ActionDialog key="c" title="Confirmar pago" tone="success" confirmLabel="Sí, confirmar pago" onClose={dialog.close}
-          description={<><p>¿Recibiste <strong>{formatUsd(dialog.state.item.principal_usd)}</strong> de <strong>{dialog.state.item.owner_email}</strong> con la referencia <strong>{dialog.state.item.payment_reference}</strong>?</p><p>La inversión se activará hoy y el plazo de 30 días empieza a contar.</p></>}
+          description={<><p>¿Recibiste <strong>{formatUsd(dialog.state.item.principal_usd)}</strong> de <strong>{dialog.state.item.owner_email}</strong> con la referencia <strong>{dialog.state.item.payment_reference}</strong>?</p><ClientReport item={dialog.state.item} /><p>La inversión se activará hoy y el plazo de {dialog.state.item.term_days ?? MIN_TERM_DAYS} días empieza a contar.</p></>}
           fields={[{ name: "note", label: "Nota interna (opcional)" }]}
           onConfirm={v => action.run("/api/admin/payments", { investmentId: dialog.state!.item.id, action: "confirm", note: v.note })} />
       : <ActionDialog key="r" title="Rechazar pago" tone="danger" confirmLabel="Rechazar y cancelar" onClose={dialog.close}
-          description={<p>La inversión de <strong>{formatUsd(dialog.state.item.principal_usd)}</strong> de {dialog.state.item.owner_email} quedará <strong>cancelada</strong>. El cliente verá el motivo.</p>}
+          description={<><p>La inversión de <strong>{formatUsd(dialog.state.item.principal_usd)}</strong> de {dialog.state.item.owner_email} quedará <strong>cancelada</strong>. El cliente verá el motivo.</p><ClientReport item={dialog.state.item} /></>}
           fields={[{ name: "note", label: "Motivo", required: true, multiline: true, placeholder: "Ej.: no recibimos la transferencia en 5 días." }]}
           onConfirm={v => action.run("/api/admin/payments", { investmentId: dialog.state!.item.id, action: "reject", note: v.note })} />)}
     </AnimatePresence>

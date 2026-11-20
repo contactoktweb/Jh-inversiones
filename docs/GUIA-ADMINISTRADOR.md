@@ -150,7 +150,7 @@ Al entrar, si aún no fijaste la ganancia de hoy, aparece esta ventana:
 ![Comprobante enviado por el cliente](manual/img/16-comprobante.png)
 
 3. **Revisa tu banco** y comprueba que llegó el dinero con ese monto.
-4. Si llegó, pulsa **Confirmar pago** y luego **Sí, confirmar pago**.
+4. Si llegó, pulsa **Confirmar pago**. En la ventana verás otra vez **la foto del comprobante** y el n.º de operación del cliente: compáralos con tu banco y pulsa **Sí, confirmar pago**.
 
 ![Confirmar el pago](manual/img/06-confirmar-pago.png)
 
@@ -166,7 +166,7 @@ En **dos lugares**:
 
 | Dónde | Qué ves |
 |---|---|
-| **Panel → Pagos** | El botón **Ver comprobante** en la fila del pago. Abre la foto en grande y desde ahí mismo puedes pulsar **Confirmar pago**. |
+| **Panel → Pagos** | Una **miniatura de la foto** en la fila del pago (púlsala para verla en grande) y, además, **dentro de la ventana de Confirmar pago o Rechazar**. |
 | **Tu correo** | El aviso **«Transferencia por verificar»** trae la foto **adjunta**, junto con el cliente, el monto y la referencia. |
 
 **Bueno saber:**

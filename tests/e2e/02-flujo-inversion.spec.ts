@@ -97,7 +97,13 @@ test.describe.serial("Flujo de inversión completo", () => {
     await expect(proof).toBeVisible();
     await expect.poll(() => proof.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(200);
     await admin.getByRole("dialog").getByRole("button", { name: "Cerrar" }).last().click();
+    // La miniatura del comprobante se ve en la fila.
+    await expect.poll(() => row.locator(".proof-thumb img").evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(200);
     await admin.locator("tr", { hasText: transferRef }).getByRole("button", { name: "Confirmar pago" }).click();
+    // La ventana de confirmar muestra la foto y el n.º de operación que envió el cliente.
+    const confirmDialog = admin.getByRole("dialog", { name: "Confirmar pago" });
+    await expect(confirmDialog).toContainText("Operación 555-AB");
+    await expect.poll(() => confirmDialog.locator(".dialog-proof img").evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(200);
     await admin.getByRole("button", { name: "Sí, confirmar pago" }).click();
     await expect(admin.getByText(/Pago confirmado/)).toBeVisible();
 
@@ -118,6 +124,7 @@ test.describe.serial("Flujo de inversión completo", () => {
 
     await admin.goto("/admin/pagos");
     await admin.locator("tr", { hasText: ref }).getByRole("button", { name: "Rechazar" }).click();
+    await expect(admin.getByRole("dialog")).toContainText("El cliente no adjuntó foto del comprobante.");
     await admin.getByRole("dialog").locator("textarea").fill("No recibimos la transferencia");
     await admin.getByRole("button", { name: "Rechazar y cancelar" }).click();
     await expect(admin.getByText("Pago rechazado.")).toBeVisible();

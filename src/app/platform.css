@@ -409,3 +409,13 @@
 .dash-sidebar{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 .dash-sidebar .dash-nav{flex-shrink:0}
 @media(max-height:820px){.dash-sidebar .sidebar-help{display:none}}
+
+/* Comprobante del cliente: miniatura en la tabla y foto dentro de confirmar/rechazar */
+.proof-thumb{display:flex;align-items:center;gap:8px;margin-top:6px;padding:4px 8px 4px 4px;border:1px solid #d8deef;border-radius:8px;background:#fff;color:#1748c4;font-size:12px;font-weight:700;cursor:pointer}
+.proof-thumb img{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#f1f3f9}
+.proof-thumb span{display:inline-flex;align-items:center;gap:4px}
+.proof-thumb:hover{border-color:#1748c4}
+.dialog-proof{margin:10px 0;padding:10px;border:1px solid #e3e8f2;border-radius:10px;background:#f7f9fd}
+.dialog-proof p{margin:0 0 8px;font-size:13px}
+.dialog-proof img{display:block;max-width:100%;max-height:300px;margin:auto;border-radius:8px;border:1px solid #e3e8f2;background:#fff}
+.report-missing{display:flex;align-items:center;gap:6px;margin:10px 0;padding:8px 10px;border-radius:8px;background:#fff8e1;border:1px solid #f0cf63;font-size:13px;color:#5a4a12}

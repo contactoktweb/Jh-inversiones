@@ -6,7 +6,7 @@ import { ImagePlus, LoaderCircle, Trash2 } from "lucide-react";
 async function compressImage(file: File, maxSide = 1600, quality = 0.82): Promise<string> {
   const url = URL.createObjectURL(file);
   try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => { const i = new Image(); i.onload = () => resolve(i); i.onerror = () => reject(new Error("No se pudo leer la imagen.")); i.src = url; });
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => { const i = new Image(); i.onload = () => resolve(i); i.onerror = () => reject(new Error("No pudimos leer esta foto. Prueba con una captura de pantalla o una imagen JPG o PNG.")); i.src = url; });
     const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(img.naturalWidth * scale); canvas.height = Math.round(img.naturalHeight * scale);
@@ -25,7 +25,8 @@ export default function ImagePicker({ id, label, hint, value, onChange }: { id: 
   const [error, setError] = useState("");
   async function pick(file?: File) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) { setError("Elige un archivo de imagen (JPG o PNG)."); return; }
+    // Algunos navegadores no informan el tipo (p. ej. fotos HEIC de iPhone en Windows): se intenta leer igual.
+    if (file.type && !file.type.startsWith("image/")) { setError("Elige un archivo de imagen (JPG o PNG)."); return; }
     setBusy(true); setError("");
     try { onChange(await compressImage(file)); } catch (e) { setError(e instanceof Error ? e.message : "No se pudo leer la imagen."); }
     finally { setBusy(false); if (input.current) input.current.value = ""; }
